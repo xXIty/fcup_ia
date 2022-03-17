@@ -9,11 +9,6 @@ class QueueingFunction(Enum):
     GULOSA  =  auto()
     A_STAR  =  auto()
 
-class TreeNode:
-    def __init__(self,data):
-        self.data      =  data
-        self.children  =  []
-        slef.parent    =  None
 
 class Config:
     
@@ -22,6 +17,9 @@ class Config:
         self.board      =  board              
         self.blank      =  board.index(0)     
         self.blankModN  =  self.blank % self.N
+
+    def __eq__(self, other):
+        return  self.board == other.board  
 
     def __str__(self):
         output = ''
@@ -107,6 +105,12 @@ class Config:
         return childs
 
 
+class TreeNode:
+    def __init__(self,data, parent=None):
+        self.data      =  data
+        self.children  =  []
+        self.parent    =  parent
+
 def thereIsNoSolution(configIni, configFin):
       invi = configIni.getInv()  
       invf = configFin.getInv()  
@@ -119,15 +123,32 @@ def thereIsNoSolution(configIni, configFin):
 
       return condi != condf
 
+def makeDescendants(node):
+        descendantList = [TreeNode(successor,node) for successor in node.data.getSuccessors()]
+        node.children = descendantList
+        return descendantList
+
+def insert(descendantList, queue, queueingFunction):
+    pass
+
 def GeneralSearchAlgorithm(queueingFunction, configInicial, configFinal):
-    if thereIsNoSolution(configInicial, configFinal):
-        return "It is impossible to reach a solution"
+    #if thereIsNoSolution(configInicial, configFinal):
+    #    return "It is impossible to reach a solution"
     queue = Queue()
+    queue.put(TreeNode(configInicial))
 
     while not queue.empty():
-        node = queue.pop()
-        if node.config.is_solved
+        node = queue.get()
+        if node.data == configFinal:
+            # return Path to solution
+            print("return Path to solution")
+            pass
+        descendantList = makeDescendants(node)
+        insert(descendantList, queue, queueingFunction)
+    return "solution not found"
 
+
+        
 if __name__ == "__main__":
     N = 4
     queueingFunction = QueueingFunction.DFS
@@ -138,14 +159,14 @@ if __name__ == "__main__":
     confLink1  =  Config(N,  [12,1,10,2,7,11,4,14,5,0,9,15,8,13,6,3])
 
 
-    print(thereIsNoSolution(confA,FSC))
-    print(thereIsNoSolution(confB,FSC))
-    print(thereIsNoSolution(confLink1,FSC))
+    #print(thereIsNoSolution(confA,FSC))
+    #print(thereIsNoSolution(confB,FSC))
+    #print(thereIsNoSolution(confLink1,FSC))
 
-    print(confA)
-    for c in confA.getSuccessors():
-      print(c.getInv())
-      print(c)
+    #print(confA)
+    #for c in confA.getSuccessors():
+      #print(c.getInv())
+      #print(c)
 
     #confLink1.getInv()
     configInicial = confB
