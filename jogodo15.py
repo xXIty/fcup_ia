@@ -70,10 +70,6 @@ def GeneralSearchAlgorithm(queueingFunction, configInicial, configFinal):
         insert(descendantList, queue, queueingFunction)
     return "solution not found"
 
-def iterativaProfundidad(descendantList, queue):
-    for node in descendantList:
-        queue.put(node) 
-
 def printPath(node):
     path = []
     path.insert(0,node)
