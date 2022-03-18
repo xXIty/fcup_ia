@@ -92,10 +92,3 @@ class Config:
             configNew.moveDown()
             childs.append(configNew)
         return childs
-
-
-class TreeNode:
-    def __init__(self,data, parent=None):
-        self.data      =  data
-        self.children  =  []
-        self.parent    =  parent

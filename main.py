@@ -1,16 +1,8 @@
-from enum import Enum, auto
-from queue import Queue
-from config import Config, TreeNode
+from  enum      import  Enum, auto
+from  queue     import  Queue     
 
-# Algorithm enumeration
-class QueueingFunction(Enum):
-    DFS     =  auto()
-    BFS     =  auto()
-    IDFS    =  auto()
-    GULOSA  =  auto()
-    A_STAR  =  auto()
-
-
+from  config    import  Config    
+from  treenode  import  TreeNode  
 
 def thereIsNoSolution(configIni, configFin):
       invi = configIni.getInv()  
