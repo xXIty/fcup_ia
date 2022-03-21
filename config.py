@@ -10,16 +10,15 @@ class Config:
         return  self.board == other.board  
 
     def __str__(self):
-        output = '\t' + 13*'-' + '\n'
+        output = 13*'-' + '\n'
         for i in range(self.N):
-            output += '\t'
             for j in range(self.N):
                 if self.board[i*self.N + j] != 0:
                     output += "|{:2}".format(self.board[i*self.N + j])
                 else:
                     output += "|  "
             output += '|\n'
-        output += '\t' + 13*'-' + '\n'
+        output += 13*'-' + '\n'
         return output
 
     # Get the number of inversions of a the board configuration.
