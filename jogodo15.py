@@ -2,7 +2,8 @@ from  enum      import  Enum, auto
 from  queue     import  Queue     
 
 from  config    import  Config    
-from  treenode  import  TreeNode  
+from  treenode  import  *
+
 
 # Algorithm enumeration
 class QueueingFunction(Enum):
@@ -50,16 +51,17 @@ def depthFirstSearch(descendantList, queue):
             queue.insert(0,descendant)
 
 def insert(descendantList, queue, queueingFunction):
-    match queueingFunction:
-        case DFS:
-            depthFirstSearch(descendantList, queue)
+    queueingFunction(descendantList, queue)
 
 def GeneralSearchAlgorithm(queueingFunction, configInicial, configFinal):
     if thereIsNoSolution(configInicial, configFinal):
         return "It is impossible to reach a solution"
+    # Init Tree
 
     # Using a list for the queue allows to use it as queue or stack.
     queue = [TreeNode(configInicial)]
+    tree = initTree(queue[0])
+    printTree()
 
     while queue:
         node = queue.pop()
