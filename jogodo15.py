@@ -49,6 +49,47 @@ def depthFirstSearch(descendantList, queue):
             continue
         else:
             queue.insert(0,descendant)
+            # updateTreePaint(descendant)
+
+def iterativeDepthFirstSearchRecursive(maxDepth, currentDepth, node, configFinal):
+    updateTreePaint(node)
+    if node.data == configFinal:
+        return node
+    if currentDepth == maxDepth:
+        return None
+    descendantList = makeDescendants(node)
+    for descendant in descendantList:
+        result  =  iterativeDepthFirstSearchRecursive(  maxDepth,
+                                                        currentDepth+1,
+                                                        descendant,
+                                                        configFinal)
+        if result is  None:
+            continue
+        else:
+            return result
+
+
+def iterativeDepthFirstSearch(configInicial, configFinal):
+    if thereIsNoSolution(configInicial, configFinal):
+        return "It is impossible to reach a solution"
+
+    result = None
+    depth = 1
+    root = TreeNode(configInicial)
+
+    while result is None:
+        initTree(root)
+        depth += 1
+        result = iterativeDepthFirstSearchRecursive(depth, 0, root, configFinal)
+    return result
+
+def breadthFirstSearch(descendantList, queue):
+    for descendant in descendantList:
+        if nodeCreatesCycle(descendant):
+            continue
+        else:
+            queue.append(descendant)
+            # updateTreePaint(descendant)
 
 def insert(descendantList, queue, queueingFunction):
     queueingFunction(descendantList, queue)
@@ -56,17 +97,17 @@ def insert(descendantList, queue, queueingFunction):
 def GeneralSearchAlgorithm(queueingFunction, configInicial, configFinal):
     if thereIsNoSolution(configInicial, configFinal):
         return "It is impossible to reach a solution"
-    # Init Tree
 
+    # Init Tree
     # Using a list for the queue allows to use it as queue or stack.
     queue = [TreeNode(configInicial)]
-    tree = initTree(queue[0])
-    printTree()
+    #initTree(queue[0])
 
     while queue:
-        node = queue.pop()
+        node = queue.pop(0)
         if node.data == configFinal:
             # return Path to solution
+            #printTree()
             return node
         descendantList = makeDescendants(node)
         insert(descendantList, queue, queueingFunction)

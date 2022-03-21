@@ -10,13 +10,22 @@ if __name__ == "__main__":
     confLink1  =  Config(N,  [12,1,10,2,7,11,4,14,5,0,9,15,8,13,6,3])
     confEasy   =  Config(N,  [1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,15])
 
-    #queueingFunction = QueueingFunction.DFS
-    queueingFunction = depthFirstSearch
-    configInicial = confA
+    #queueingFunction = depthFirstSearch
+    #queueingFunction = breadthFirstSearch
+    queueingFunction = iterativeDepthFirstSearch
+
+    #configInicial = confLink1
+    configInicial = confEasy
+    #configInicial = confA
+
     configFinal   = FSC
-    searchResult  = GeneralSearchAlgorithm(queueingFunction,
-                                           configInicial,
-                                           configFinal)
+    
+    if queueingFunction == iterativeDepthFirstSearch:
+        searchResult  = iterativeDepthFirstSearch(configInicial, configFinal)
+    else:
+        searchResult  = GeneralSearchAlgorithm(queueingFunction,
+                                               configInicial,
+                                               configFinal)
 
     if isinstance(searchResult, str):
         print(searchResult)
