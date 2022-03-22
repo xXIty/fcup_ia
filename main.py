@@ -19,6 +19,11 @@ if __name__ == "__main__":
     configInicial = confA
 
     configFinal   = FSC
+
+    print(confA.heuristicManhattan(FSC))
+    print(confB.heuristicManhattan(FSC))
+    print(confEasy.heuristicManhattan(FSC))
+    print(confLink1.heuristicManhattan(FSC))
     
     if queueingFunction == iterativeDepthFirstSearch:
         searchResult  = iterativeDepthFirstSearch(configInicial, configFinal)

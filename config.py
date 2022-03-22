@@ -95,3 +95,17 @@ class Config:
             configNew.moveDown()
             childs.append(configNew)
         return childs
+
+    def heuristicManhattan(self, configFinal):
+        manhattanDist = 0
+        for index in range(len(self.board)):
+            indexFinal = configFinal.board.index(self.board[index])
+            x1 = int(index % self.N)
+            y1 = int(index / self.N)
+            x2 = int(indexFinal % self.N)
+            y2 = int(indexFinal / self.N)
+            manhattanDist += abs(x1 - x2) + abs(y1 - y2)
+        return manhattanDist
+            
+
+        
