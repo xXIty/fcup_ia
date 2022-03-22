@@ -43,7 +43,7 @@ def nodeCreatesCycle(node):
             break
     return cycleExists
 
-def depthFirstSearch(descendantList, queue):
+def depthFirstSearch(descendantList, queue, configFinal):
     for descendant in descendantList:
         if nodeCreatesCycle(descendant):
             continue
@@ -83,7 +83,7 @@ def iterativeDepthFirstSearch(configInicial, configFinal):
         result = iterativeDepthFirstSearchRecursive(depth, 0, root, configFinal)
     return result
 
-def breadthFirstSearch(descendantList, queue):
+def breadthFirstSearch(descendantList, queue, configFinal):
     for descendant in descendantList:
         if nodeCreatesCycle(descendant):
             continue
@@ -91,8 +91,21 @@ def breadthFirstSearch(descendantList, queue):
             queue.append(descendant)
             updateTreePaint(descendant)
 
-def insert(descendantList, queue, queueingFunction):
-    queueingFunction(descendantList, queue)
+def greedySearch(descendantList, queue, configFinal):
+    for descendant in descendantList:
+        if nodeCreatesCycle(descendant):
+            continue
+        else:
+            descendant.data.setHeuristics(configFinal)
+            queue.append(descendant)
+            updateTreePaint(descendant)
+    minNode = min(queue, key=lambda node: node.data.heuristic)
+    indexMin = queue.index(minNode)
+    queue.pop(indexMin)
+    queue.insert(0, minNode)
+        
+def insert(descendantList, queue, queueingFunction, configFinal):
+    queueingFunction(descendantList, queue, configFinal)
 
 def GeneralSearchAlgorithm(queueingFunction, configInicial, configFinal):
     if thereIsNoSolution(configInicial, configFinal):
@@ -110,7 +123,7 @@ def GeneralSearchAlgorithm(queueingFunction, configInicial, configFinal):
             #printTree()
             return node
         descendantList = makeDescendants(node)
-        insert(descendantList, queue, queueingFunction)
+        insert(descendantList, queue, queueingFunction, configFinal)
     return "solution not found"
 
 def printPath(node):

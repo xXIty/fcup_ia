@@ -5,6 +5,7 @@ class Config:
         self.board      =  board              
         self.blank      =  board.index(0)     
         self.blankModN  =  self.blank % self.N
+        self.heuristic = None
 
     def __eq__(self, other):
         return  self.board == other.board  
@@ -107,5 +108,15 @@ class Config:
             manhattanDist += abs(x1 - x2) + abs(y1 - y2)
         return manhattanDist
             
+    def heuristicMisplaced(self, configFinal):
+        result = 0
+        for position in range(len(self.board)):
+            if self.board[position] != configFinal.board[position]:
+                result += 1
+        return result
 
+    def setHeuristics(self, configFinal):
+        self.heuristic = self.heuristicManhattan(configFinal)
+        #self.heuristic = self.heuristicMisplaced(configFinal)
+        
         

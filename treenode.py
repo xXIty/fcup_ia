@@ -52,7 +52,7 @@ def updateTreePaint(node):
         treeInsertCounter += 1
         parentNode = tree & str(id(node.parent))
         parentNode.add_child(name=str(id(node)))
-        face = TextFace(str(node.data)+'\n'+str(treeInsertCounter), ftype="Courier")
+        face = TextFace(str(node.data)+'\n'+str(node.data.heuristic), ftype="Courier")
         nodePainted = tree & str(id(node)) 
         nodePainted.add_face(face, column=0)
         printTree()

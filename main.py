@@ -11,19 +11,17 @@ if __name__ == "__main__":
     confEasy   =  Config(N,  [1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,15])
 
     #queueingFunction = depthFirstSearch
-    queueingFunction = breadthFirstSearch
+    #queueingFunction = breadthFirstSearch
     #queueingFunction = iterativeDepthFirstSearch
+    queueingFunction = greedySearch
 
     #configInicial = confLink1
     #configInicial = confEasy
     configInicial = confA
 
     configFinal   = FSC
-
-    print(confA.heuristicManhattan(FSC))
-    print(confB.heuristicManhattan(FSC))
-    print(confEasy.heuristicManhattan(FSC))
-    print(confLink1.heuristicManhattan(FSC))
+    
+    #print(FSC.heuristicMisplaced(FSC))
     
     if queueingFunction == iterativeDepthFirstSearch:
         searchResult  = iterativeDepthFirstSearch(configInicial, configFinal)
