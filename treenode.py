@@ -1,6 +1,8 @@
 from ete3 import Tree, TextFace, NodeStyle, TreeStyle
+from cv2 import VideoWriter, VideoWriter_fourcc, imread, imshow
 
 tree = Tree()
+videoWriter = VideoWriter('outputs/output.avi', VideoWriter_fourcc('M','J','P','G'), 10, (600, 600))
 treeInsertCounter = 0
 class TreeNode:
     def __init__(self,data, parent=None):
@@ -11,6 +13,7 @@ class TreeNode:
 def initTree(root):
     global tree
     global treeInsertCounter
+    global videoWriter
     treeInsertCounter = 0
     tree = Tree()
     tree.add_child(name=str(id(root)))
@@ -21,7 +24,12 @@ def initTree(root):
 def printTree():
     ts = TreeStyle()
     ts.show_leaf_name = False
-    tree.show(tree_style=ts)
+    #tree.show(tree_style=ts)
+    tree.render('outputs/frame.png', w=600, h=600, tree_style=ts)
+    frame = imread('outputs/frame.png')
+    global videoWriter
+    videoWriter.write(frame)
+
 
 def updateTreePaint(node):
     if node.parent is not None:

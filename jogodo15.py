@@ -49,7 +49,7 @@ def depthFirstSearch(descendantList, queue):
             continue
         else:
             queue.insert(0,descendant)
-            # updateTreePaint(descendant)
+            updateTreePaint(descendant)
 
 def iterativeDepthFirstSearchRecursive(maxDepth, currentDepth, node, configFinal):
     updateTreePaint(node)
@@ -89,7 +89,7 @@ def breadthFirstSearch(descendantList, queue):
             continue
         else:
             queue.append(descendant)
-            # updateTreePaint(descendant)
+            updateTreePaint(descendant)
 
 def insert(descendantList, queue, queueingFunction):
     queueingFunction(descendantList, queue)
@@ -101,7 +101,7 @@ def GeneralSearchAlgorithm(queueingFunction, configInicial, configFinal):
     # Init Tree
     # Using a list for the queue allows to use it as queue or stack.
     queue = [TreeNode(configInicial)]
-    #initTree(queue[0])
+    initTree(queue[0])
 
     while queue:
         node = queue.pop(0)

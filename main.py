@@ -11,12 +11,12 @@ if __name__ == "__main__":
     confEasy   =  Config(N,  [1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,15])
 
     #queueingFunction = depthFirstSearch
-    #queueingFunction = breadthFirstSearch
-    queueingFunction = iterativeDepthFirstSearch
+    queueingFunction = breadthFirstSearch
+    #queueingFunction = iterativeDepthFirstSearch
 
     #configInicial = confLink1
-    configInicial = confEasy
-    #configInicial = confA
+    #configInicial = confEasy
+    configInicial = confA
 
     configFinal   = FSC
     
