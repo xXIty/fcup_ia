@@ -1,3 +1,4 @@
+from  time      import  time
 from  config    import  Config
 from  jogodo15  import  *
 
@@ -9,30 +10,42 @@ if __name__ == "__main__":
     confB      =  Config(N,  [1,2,3,4,13,6,8,12,5,9,0,7,14,11,10,15])
     confLink1  =  Config(N,  [12,1,10,2,7,11,4,14,5,0,9,15,8,13,6,3])
     confEasy   =  Config(N,  [1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,15])
+    confMail   =  Config(N,  [1,2,3,4,9,5,7,8,13,6,10,12,0,14,11,15])
 
     #queueingFunction = depthFirstSearch
     #queueingFunction = breadthFirstSearch
+    queueingFunction = aStarSearch
     #queueingFunction = iterativeDepthFirstSearch
-    queueingFunction = greedySearch
+    #queueingFunction = greedySearch
 
     #configInicial = confLink1
     #configInicial = confEasy
     configInicial = confA
+    #configInicial = confMail
 
     configFinal   = FSC
     
-    #print(FSC.heuristicMisplaced(FSC))
+    start_time = None
+
     
     if queueingFunction == iterativeDepthFirstSearch:
+        start_time = time()
         searchResult  = iterativeDepthFirstSearch(configInicial, configFinal)
     else:
+        start_time = time()
         searchResult  = GeneralSearchAlgorithm(queueingFunction,
                                                configInicial,
                                                configFinal)
+    # Measure time execution of the algorithms
+    searchTime = time() - start_time
 
     if isinstance(searchResult, str):
         print(searchResult)
     else:
-        printPath(searchResult)
+        searchLength = printPath(searchResult)
+
+        print("Solution information")
+        print("\tOtimalidade: " + str(searchLength))
+        print("\tTempo ate solução: " + str(searchTime) + " s")
 
 

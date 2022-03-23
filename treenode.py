@@ -13,11 +13,17 @@ class TreeNode:
         self.data      =  data
         self.children  =  []
         self.parent    =  parent
+        self.depth     =  None
+        if parent != None:
+            self.depth = parent.depth + 1
+        else:
+            self.depth = 0
 
     def __eq__(self, other):
         if other != None:
             return self.data == other.data
         return False
+    
 
 def initTree(root):
     if not DEBUG:
@@ -52,7 +58,7 @@ def updateTreePaint(node):
         treeInsertCounter += 1
         parentNode = tree & str(id(node.parent))
         parentNode.add_child(name=str(id(node)))
-        face = TextFace(str(node.data)+'\n'+str(node.data.heuristic), ftype="Courier")
+        face = TextFace(str(node.data)+'\n'+str(node.data.heuristic + node.depth), ftype="Courier")
         nodePainted = tree & str(id(node)) 
         nodePainted.add_face(face, column=0)
         printTree()

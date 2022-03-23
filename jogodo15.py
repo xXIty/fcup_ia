@@ -46,6 +46,7 @@ def nodeCreatesCycle(node):
 def depthFirstSearch(descendantList, queue, configFinal):
     for descendant in descendantList:
         if nodeCreatesCycle(descendant):
+            del descendant
             continue
         else:
             queue.insert(0,descendant)
@@ -53,20 +54,29 @@ def depthFirstSearch(descendantList, queue, configFinal):
 
 def iterativeDepthFirstSearchRecursive(maxDepth, currentDepth, node, configFinal):
     updateTreePaint(node)
+
     if node.data == configFinal:
         return node
     if currentDepth == maxDepth:
         return None
+
     descendantList = makeDescendants(node)
     for descendant in descendantList:
-        result  =  iterativeDepthFirstSearchRecursive(  maxDepth,
-                                                        currentDepth+1,
-                                                        descendant,
-                                                        configFinal)
-        if result is  None:
+
+        if nodeCreatesCycle(descendant):
+            del descendant
             continue
-        else:
-            return result
+
+        # Continue DFS through this descendant
+        else: 
+            result  =  iterativeDepthFirstSearchRecursive(  maxDepth,
+                                                            currentDepth+1,
+                                                            descendant,
+                                                            configFinal)
+            if result is  None:
+                continue
+            else:
+                return result
 
 
 def iterativeDepthFirstSearch(configInicial, configFinal):
@@ -104,6 +114,20 @@ def greedySearch(descendantList, queue, configFinal):
     queue.pop(indexMin)
     queue.insert(0, minNode)
         
+
+def aStarSearch(descendantList, queue, configFinal):
+    for descendant in descendantList:
+        if nodeCreatesCycle(descendant):
+            continue
+        else:
+            descendant.data.setHeuristics(configFinal)
+            queue.append(descendant)
+            updateTreePaint(descendant)
+    minNode = min(queue, key=lambda node: (node.data.heuristic + node.depth))
+    indexMin = queue.index(minNode)
+    queue.pop(indexMin)
+    queue.insert(0, minNode)
+
 def insert(descendantList, queue, queueingFunction, configFinal):
     queueingFunction(descendantList, queue, configFinal)
 
@@ -136,3 +160,5 @@ def printPath(node):
     
     for node in path:
         print(node.data)
+
+    return int(len(path)-1)
