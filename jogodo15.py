@@ -167,23 +167,25 @@ def GeneralSearchAlgorithm(queueingFunction, configInicial, configFinal):
         insert(descendantList, queue, queueingFunction, configFinal)
     return "solution not found"
 
-def printPath(node):
+# Return depth of node and str representation of each step from the root.
+def getPathString(node):
     path = []
     path.insert(0,node)
+    pathString = ''
 
     while node.parent != None:
         node = node.parent
         path.insert(0,node)
     
     for node in path:
-        print(node.data)
+        pathString += str(node.data)
 
-    return int(len(path)-1)
+    return pathString
 
 # Algorithm enumeration
 algoritmsDict = {    "DFS"     :  depthFirstSearch,
                      "BFS"     :  breadthFirstSearch,
                      "IDFS"    :  iterativeDepthFirstSearch,
                      "GREEDY"  :  greedySearch,
-                     "ASTAR"  :  aStarSearch }
+                     "ASTAR"   :  aStarSearch }
 

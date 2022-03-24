@@ -1,10 +1,30 @@
 import argparse
-import  signal              
+import signal              
+import sys
 
 from    time        import  time
+from    tabulate    import  tabulate
 from    config      import  Config
 from    jogodo15    import  *
 from    contextlib  import  contextmanager
+
+class SolutionInfo:
+    def __init__(self,
+                solved,
+                depth          =  0,
+                executionTime  =  0,
+                nodes          =  0,
+                pathStr        =  None,
+                configFinal    =  None,
+                configInicial  =  None):
+
+        self.solved         =  solved
+        self.depth          =  depth
+        self.executionTime  =  executionTime
+        self.nodes          =  nodes
+        self.pathStr        =  pathStr
+        self.configInicial  =  configInicial
+        self.configFinal    =  configFinal
 
 @contextmanager
 def timeout(time):
@@ -16,7 +36,8 @@ def timeout(time):
     try:
         yield
     except TimeoutError:
-        print("TIMEOUT REACHED!!!")
+        solutionInfo = SolutionInfo(solved = False)
+        return solutionInfo
         pass
     finally:
         # Unregister the signal so it won't be triggered
@@ -27,10 +48,9 @@ def timeout(time):
 def raise_timeout(signum, frame):
     raise TimeoutError
 
-def evaluate(configInicial, configFinal, queueingFunction, timeoutSeconds):
+def evaluate(configInicial, configFinal, algorithmName, timeoutSeconds):
 
-    algorithmIndex  =  list(algoritmsDict.values()).index(queueingFunction)
-    algorithmKey    =  list(algoritmsDict.keys())[algorithmIndex]
+    queueingFunction = algoritmsDict[algorithmName]
 
     with timeout(timeoutSeconds):
         start_time = None
@@ -47,19 +67,21 @@ def evaluate(configInicial, configFinal, queueingFunction, timeoutSeconds):
         # Measure time execution of the algorithms
         searchTime = time() - start_time
 
+        # Fill solutionInfo object with data
+        solutionInfo = None
         if isinstance(searchResult, str):
-            print(searchResult)
+            solutionInfo = SolutionInfo(solved = False)
         else:
-            searchLength = printPath(searchResult)
+            solutionInfo                =  SolutionInfo(solved = True)
+            solutionInfo.executionTime  =  searchTime                    
+            solutionInfo.depth          =  searchResult.depth
+            solutionInfo.pathStr        =  getPathString(searchResult)     
+            solutionInfo.nodes          =  getNodeCount()
+            solutionInfo.configInicial  =  configInicial
+            solutionInfo.configFinal    =  configFinal
 
-            print("Solution information")
-            print("\tOtimalidade: " + str(searchLength))
-            print("\tTempo ate solução: " + str(searchTime) + " s")
-            print("\tEspaco: " + str(getNodeCount()) + " nos")
-            print("\tProfundidade: " + str(searchResult.depth) )
-            print("\tAlgoritmo: " + algorithmKey)
-            print("\tConfigInicial: " + str(configInicial.board))
-            print("\tConfigFinal: " + str(configFinal.board))
+        return solutionInfo
+
 
 if __name__ == "__main__":
 
@@ -99,6 +121,7 @@ if __name__ == "__main__":
             nargs    = '*',
             dest     = 'algorithms',
             type     = str,
+            choices  = ['DFS', 'BFS', 'IDFS', 'GREEDY', 'ASTAR'],
             help     = 'Algorithms to use for solving the configruations.\n'+
                        '    - DFS\n'    +
                        '    - BFS\n'    +
@@ -138,23 +161,70 @@ if __name__ == "__main__":
     algorithms     =  []
 
     # Generate <args.configs> random solvable configurations
+    if args.configs < 1:
+        print(sys.argv[0] + ': error: argument -r: must be greater than 0')
     for i in range(args.configs):
         configRandom = Config(FSC.N, FSC.board)
         configRandom.scramble(args.maxOptimal)
 
         configsRandom.append(configRandom)
 
-    # Prepare algorithms to use from args.algoritms or use all if not specified
+    # Prepare algorithms to use from args.algoritms or all if not specified
     if args.algorithms is None:
-        algorithms = list(algoritmsDict.values())
+        algorithms = list(algoritmsDict.keys())
     else:
-        for algorithm in args.algorithms:
-            algorithms.append(algoritmsDict[algorithm])
+        algorithms = args.algorithms
 
 
     # Execute each random configuration using the specified algorithms
-    for config in configsRandom:
-        configInicial = config
-        configFinal   = FSC
-        for algorithm in algorithms:
-            evaluate(configInicial, configFinal, algorithm, args.timeoutSeconds)
+
+    outputTableHeaders = ["Strategy", "Time (s)", "Space (nodes)", "Sol. found", "Depth/Cost"]
+    outputTableData    = []
+
+    for algorithm in algorithms:
+        configsSolved = 0
+        solutionInfoMean = SolutionInfo(solved = True)
+
+        for config in configsRandom:
+            configInicial = config
+            configFinal   = FSC
+
+            solutionInfo = evaluate(configInicial, configFinal, algorithm, args.timeoutSeconds)
+
+            if solutionInfo is not None and solutionInfo.solved:
+                configsSolved += 1
+
+                solutionInfoMean.depth          +=  solutionInfo.depth
+                solutionInfoMean.executionTime  +=  solutionInfo.executionTime
+                solutionInfoMean.nodes          +=  solutionInfo.nodes
+
+#                print("Solution information")
+#                print("\tTempo ate solução: " + str(solutionInfo.executionTime) + " s")
+#                print("\tEspaco: " + str(solutionInfo.nodes) + " nos")
+#                print("\tDepth: " + str(solutionInfo.depth) )
+#                print("\tAlgoritmo: " + algorithmName)
+#                print("\tConfigInicial: " + str(configInicial.board))
+#                print("\tConfigFinal: " + str(configFinal.board))
+
+
+        if configsSolved:
+            solutionInfoMean.depth         /= configsSolved
+            solutionInfoMean.executionTime /= configsSolved
+            solutionInfoMean.nodes         /= configsSolved
+
+        outputTableData.append([algorithm,
+            solutionInfoMean.executionTime,
+            solutionInfoMean.nodes,
+            configsSolved,
+            solutionInfoMean.depth])
+    print()
+    print("Results Sumary:")
+    print("\tMaximum optimal solution depth: " + str(args.maxOptimal))
+    print("\tNumber of configurations tested: " + str(args.configs))
+    print("\tTimeout used: " + str(args.timeoutSeconds) + ' s')
+    print(tabulate(outputTableData, headers=outputTableHeaders, tablefmt="grid"))
+
+
+
+
+
