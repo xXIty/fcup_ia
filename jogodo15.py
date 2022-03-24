@@ -94,7 +94,13 @@ if __name__ == "__main__":
     #
 
     parser = argparse.ArgumentParser(
-            description     = "The 15 Puzzle solver.",
+            description     = """████████╗██╗  ██╗███████╗     ██╗███████╗    ██████╗ ██╗   ██╗███████╗███████╗██╗     ███████╗    
+╚══██╔══╝██║  ██║██╔════╝    ███║██╔════╝    ██╔══██╗██║   ██║╚══███╔╝╚══███╔╝██║     ██╔════╝    
+   ██║   ███████║█████╗      ╚██║███████╗    ██████╔╝██║   ██║  ███╔╝   ███╔╝ ██║     █████╗      
+   ██║   ██╔══██║██╔══╝       ██║╚════██║    ██╔═══╝ ██║   ██║ ███╔╝   ███╔╝  ██║     ██╔══╝      
+   ██║   ██║  ██║███████╗     ██║███████║    ██║     ╚██████╔╝███████╗███████╗███████╗███████╗    
+   ╚═╝   ╚═╝  ╚═╝╚══════╝     ╚═╝╚══════╝    ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝╚══════╝    
+                                                                                                  """,
             formatter_class = argparse.RawTextHelpFormatter)
 
     parser.add_argument('-r' ,
@@ -203,7 +209,7 @@ if __name__ == "__main__":
 
 
     configurations  =  []
-    algorithms     =  []
+    algorithms      =  []
 
     # Generate <args.configs> random solvable configurations
     if args.configInitial is not None:
@@ -250,7 +256,7 @@ if __name__ == "__main__":
 
             solutionInfo = evaluate(configInicial, configFinal, algorithm, args.timeoutSeconds)
 
-            if solutionInfo.solved:
+            if solutionInfo is not None and solutionInfo.solved:
                 configsSolved += 1
 
                 solutionInfoMean.depth          +=  solutionInfo.depth
