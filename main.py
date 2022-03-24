@@ -96,10 +96,44 @@ if __name__ == "__main__":
 
     parser.add_argument('-r' ,
             dest = 'configs',
-            required = True,
+            required = False,
             metavar  = 'R',
             type     = int,
             help     = 'Try to solve R random configurations.')
+
+    parser.add_argument('-s' ,
+            dest = 'summary',
+            required = False,
+            default  = False,
+            action   = 'store_true',
+            help     = 'Hide indivdual solutions and show only the results summary')
+    
+    parser.add_argument('-p' ,
+            dest = 'path',
+            required = False,
+            default  = False,
+            action   = 'store_true',
+            help     = 'Show the path to the solution')
+
+    parser.add_argument('-i' ,
+            dest = 'configInitial',
+            required = False,
+            metavar  = 'N',
+            choices  = range(16),
+            nargs    = 16,
+            action   = 'append',
+            type     = int,
+            help     = 'Solve given configuration (blank tile is represented with a 0).')
+
+    parser.add_argument('-f' ,
+            dest = 'configFinal',
+            required = False,
+            metavar  = 'N',
+            default  = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0],
+            choices  = range(16),
+            nargs    = 16,
+            type     = int,
+            help     = 'Set goal configuration (blank tile is represented with a 0).')
 
     parser.add_argument('-d' ,
             dest = 'maxOptimal',
@@ -114,6 +148,16 @@ if __name__ == "__main__":
             default  = 10,
             type     = int,
             help     = 'Timeout each search after T seconds. Default = 10')
+
+    parser.add_argument('-H' ,
+            dest = 'heuristic',
+            required = False,
+            metavar  = 'heuristic',
+            default  = 0,
+            choices  = [0,1],
+            nargs    = 1,
+            type     = int,
+            help     = 'Choose the heuristic for informed searches. (0: manhattan, 1: missplaced)')
 
     parser.add_argument('-a',
             required = False,
@@ -139,7 +183,7 @@ if __name__ == "__main__":
     N = 4
 
     # Final Standard Configuration of The 15 puzzle
-    FSC        =  Config(N,  [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0])
+    FSC        =  Config(N,  args.configFinal)
 
     # confA      =  Config(N,  [1,2,3,4,5,6,8,12,13,9,0,7,14,11,10,15])
     # confB      =  Config(N,  [1,2,3,4,13,6,8,12,5,9,0,7,14,11,10,15])
@@ -157,17 +201,27 @@ if __name__ == "__main__":
                  # FSC)        
     # configsIAMail = [C1, C2, C3, CsemSol]
 
-    configsRandom  =  []
+    configurations  =  []
     algorithms     =  []
 
+    setHeuristic(args.heuristic)
     # Generate <args.configs> random solvable configurations
-    if args.configs < 1:
-        print(sys.argv[0] + ': error: argument -r: must be greater than 0')
-    for i in range(args.configs):
-        configRandom = Config(FSC.N, FSC.board)
-        configRandom.scramble(args.maxOptimal)
+    if args.configInitial is not None:
+        for config in args.configInitial:
+            configurations.append(Config(N, config))
+        
+    else:
+        if args.configs is None:
+            print(sys.argv[0] + ': error: argument -r or -i  must be present')
+            exit(2)
+        if args.configs < 1:
+            print(sys.argv[0] + ': error: argument -r: must be greater than 0')
+            exit(2)
+        for i in range(args.configs):
+            configRandom = Config(N, args.configFinal)
+            configRandom.scramble(args.maxOptimal)
 
-        configsRandom.append(configRandom)
+            configurations.append(configRandom)
 
     # Prepare algorithms to use from args.algoritms or all if not specified
     if args.algorithms is None:
@@ -185,7 +239,7 @@ if __name__ == "__main__":
         configsSolved = 0
         solutionInfoMean = SolutionInfo(solved = True)
 
-        for config in configsRandom:
+        for config in configurations:
             configInicial = config
             configFinal   = FSC
 
@@ -198,13 +252,17 @@ if __name__ == "__main__":
                 solutionInfoMean.executionTime  +=  solutionInfo.executionTime
                 solutionInfoMean.nodes          +=  solutionInfo.nodes
 
-#                print("Solution information")
-#                print("\tTempo ate solução: " + str(solutionInfo.executionTime) + " s")
-#                print("\tEspaco: " + str(solutionInfo.nodes) + " nos")
-#                print("\tDepth: " + str(solutionInfo.depth) )
-#                print("\tAlgoritmo: " + algorithmName)
-#                print("\tConfigInicial: " + str(configInicial.board))
-#                print("\tConfigFinal: " + str(configFinal.board))
+                if not args.summary:
+
+                    print("Solution information")
+                    print("\tTempo ate solução: " + str(solutionInfo.executionTime) + " s")
+                    print("\tEspaco: " + str(solutionInfo.nodes) + " nos")
+                    print("\tDepth: " + str(solutionInfo.depth) )
+                    print("\tAlgoritmo: " + algorithm)
+                    print("\tConfigInicial: " + str(configInicial.board))
+                    print("\tConfigFinal: " + str(configFinal.board))
+                    if args.path:
+                        print("\tPath to solution: \n" + solutionInfo.pathStr)
 
 
         if configsSolved:
@@ -220,8 +278,9 @@ if __name__ == "__main__":
     print()
     print("Results Sumary:")
     print("\tMaximum optimal solution depth: " + str(args.maxOptimal))
-    print("\tNumber of configurations tested: " + str(args.configs))
+    print("\tNumber of configurations tested: " + str(len(configurations)))
     print("\tTimeout used: " + str(args.timeoutSeconds) + ' s')
+    print("\tSelected heuristic: " + str(args.heuristic))
     print(tabulate(outputTableData, headers=outputTableHeaders, tablefmt="grid"))
 
 

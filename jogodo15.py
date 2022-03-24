@@ -5,11 +5,17 @@ from  config    import  Config
 from  treenode  import  *
 
 
+
 nodeCount = None
+heuristic = 0
 
 def getNodeCount():
     global nodeCount
     return nodeCount
+
+def setHeuristic(val):
+    global heuristic
+    heuristic = val
 
 def thereIsNoSolution(configIni, configFin):
       invi = configIni.getInv()  
@@ -117,7 +123,11 @@ def greedySearch(descendantList, queue, configFinal):
             del descendant
             continue
         else:
-            descendant.data.setHeuristics(configFinal)
+            global heuristic
+            if heuristic == 0:
+                descendant.data.setHeuristicManhattan(configFinal)
+            else:
+                descendant.data.setHeuristicMisplaced(configFinal)
             queue.append(descendant)
             updateTreePaint(descendant)
             nodeCount += 1
@@ -134,7 +144,11 @@ def aStarSearch(descendantList, queue, configFinal):
             del descendant
             continue
         else:
-            descendant.data.setHeuristics(configFinal)
+            global heuristic
+            if heuristic == 0:
+                descendant.data.setHeuristicManhattan(configFinal)
+            else:
+                descendant.data.setHeuristicMisplaced(configFinal)
             queue.append(descendant)
             updateTreePaint(descendant)
             nodeCount += 1
