@@ -5,7 +5,7 @@ import sys
 from    time        import  time
 from    tabulate    import  tabulate
 from    config      import  Config
-from    jogodo15    import  *
+from    jogodo15lib    import  *
 from    contextlib  import  contextmanager
 
 class SolutionInfo:

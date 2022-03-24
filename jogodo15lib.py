@@ -57,11 +57,9 @@ def depthFirstSearch(descendantList, queue, configFinal):
             continue
         else:
             queue.insert(0,descendant)
-            updateTreePaint(descendant)
             nodeCount += 1
 
 def iterativeDepthFirstSearchRecursive(maxDepth, currentDepth, node, configFinal):
-    updateTreePaint(node)
 
     if node.data == configFinal:
         return node
@@ -100,7 +98,6 @@ def iterativeDepthFirstSearch(configInicial, configFinal):
     nodeCount = 1
 
     while result is None:
-        initTree(root)
         depth += 1
         result = iterativeDepthFirstSearchRecursive(depth, 0, root, configFinal)
     return result
@@ -113,7 +110,6 @@ def breadthFirstSearch(descendantList, queue, configFinal):
             continue
         else:
             queue.append(descendant)
-            updateTreePaint(descendant)
             nodeCount += 1
 
 def greedySearch(descendantList, queue, configFinal):
@@ -129,7 +125,6 @@ def greedySearch(descendantList, queue, configFinal):
             else:
                 descendant.data.setHeuristicMisplaced(configFinal)
             queue.append(descendant)
-            updateTreePaint(descendant)
             nodeCount += 1
     minNode = min(queue, key=lambda node: node.data.heuristic)
     indexMin = queue.index(minNode)
@@ -150,7 +145,6 @@ def aStarSearch(descendantList, queue, configFinal):
             else:
                 descendant.data.setHeuristicMisplaced(configFinal)
             queue.append(descendant)
-            updateTreePaint(descendant)
             nodeCount += 1
     minNode = min(queue, key=lambda node: (node.data.heuristic + node.depth))
     indexMin = queue.index(minNode)
@@ -167,7 +161,6 @@ def GeneralSearchAlgorithm(queueingFunction, configInicial, configFinal):
     # Init Tree
     # Using a list for the queue allows to use it as queue or stack.
     queue = [TreeNode(configInicial)]
-    initTree(queue[0])
     global nodeCount
     nodeCount = 1
 
