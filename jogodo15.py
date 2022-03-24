@@ -5,14 +5,6 @@ from  config    import  Config
 from  treenode  import  *
 
 
-# Algorithm enumeration
-class QueueingFunction(Enum):
-    DFS     =  auto()
-    # BFS     =  auto()
-    # IDFS    =  auto()
-    # GULOSA  =  auto()
-    # A_STAR  =  auto()
-
 nodeCount = None
 
 def getNodeCount():
@@ -187,3 +179,11 @@ def printPath(node):
         print(node.data)
 
     return int(len(path)-1)
+
+# Algorithm enumeration
+algoritmsDict = {    "DFS"     :  depthFirstSearch,
+                     "BFS"     :  breadthFirstSearch,
+                     "IDFS"    :  iterativeDepthFirstSearch,
+                     "GREEDY"  :  greedySearch,
+                     "ASTAR"  :  aStarSearch }
+

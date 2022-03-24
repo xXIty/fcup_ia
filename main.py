@@ -1,8 +1,10 @@
-from  time      import  time
-from  config    import  Config
-from  jogodo15  import  *
-import signal
-from contextlib import contextmanager
+import argparse
+import  signal              
+
+from    time        import  time
+from    config      import  Config
+from    jogodo15    import  *
+from    contextlib  import  contextmanager
 
 @contextmanager
 def timeout(time):
@@ -25,8 +27,12 @@ def timeout(time):
 def raise_timeout(signum, frame):
     raise TimeoutError
 
-def evaluate(configInicial, configFinal, queueingFunction, algoId):
-    with timeout(120):
+def evaluate(configInicial, configFinal, queueingFunction):
+
+    algorithmIndex  =  list(algoritmsDict.values()).index(queueingFunction)
+    algorithmKey    =  list(algoritmsDict.keys())[algorithmIndex]
+
+    with timeout(10):
         start_time = None
 
         if queueingFunction == iterativeDepthFirstSearch:
@@ -51,19 +57,81 @@ def evaluate(configInicial, configFinal, queueingFunction, algoId):
             print("\tTempo ate solução: " + str(searchTime) + " s")
             print("\tEspaco: " + str(getNodeCount()) + " nos")
             print("\tProfundidade: " + str(searchResult.depth) )
-            print("\tAlgoritmo: " + str(algoId))
+            print("\tAlgoritmo: " + algorithmKey)
             print("\tConfigInicial: " + str(configInicial.board))
             print("\tConfigFinal: " + str(configFinal.board))
 
 if __name__ == "__main__":
+
+    #
+    # Config comand arguments parser
+    # =================================
+    #
+
+    parser = argparse.ArgumentParser(
+            description     = "The 15 Puzzle solver.",
+            formatter_class = argparse.RawTextHelpFormatter)
+
+    parser.add_argument('-r' ,
+            dest = 'configs',
+            required = True,
+            metavar  = 'R',
+            type     = int,
+            help     = 'Try to solve R random configurations.')
+
+    parser.add_argument('-d' ,
+            dest = 'maxOptimal',
+            metavar  = 'D',
+            default  = 10,
+            type     = int,
+            help     = 'Maximum depth for the optimal solution.')
+
+    parser.add_argument('-a',
+            required = False,
+            metavar  = 'A',
+            nargs    = '*',
+            dest     = 'algorithms',
+            type     = str,
+            help     = 'Algorithms to use for solving the configruations.\n'+
+                       '    - DFS\n'    +
+                       '    - BFS\n'    +
+                       '    - IDFS\n'   +
+                       '    - GREEDY\n' +
+                       '    - ASTAR'     )
+
+    args = parser.parse_args()
+
+    #
+    # Start of main program
+    # =======================
+    #
+
     N = 4
 
     FSC        =  Config(N,  [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0])
-    confA      =  Config(N,  [1,2,3,4,5,6,8,12,13,9,0,7,14,11,10,15])
-    confB      =  Config(N,  [1,2,3,4,13,6,8,12,5,9,0,7,14,11,10,15])
-    confLink1  =  Config(N,  [12,1,10,2,7,11,4,14,5,0,9,15,8,13,6,3])
-    confEasy   =  Config(N,  [1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,15])
-    confMail   =  Config(N,  [1,2,3,4,9,5,7,8,13,6,10,12,0,14,11,15])
+    # confA      =  Config(N,  [1,2,3,4,5,6,8,12,13,9,0,7,14,11,10,15])
+    # confB      =  Config(N,  [1,2,3,4,13,6,8,12,5,9,0,7,14,11,10,15])
+    # confLink1  =  Config(N,  [12,1,10,2,7,11,4,14,5,0,9,15,8,13,6,3])
+    # confEasy   =  Config(N,  [1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,15])
+    # confMail   =  Config(N,  [1,2,3,4,9,5,7,8,13,6,10,12,0,14,11,15])
+
+    configsRandom  =  []
+    algorithms     =  []
+    
+
+    for i in range(args.configs):
+        configRandom = Config(FSC.N, FSC.board)
+        configRandom.scramble(args.maxOptimal)
+
+        configsRandom.append(configRandom)
+
+
+    if args.algorithms is None:
+        algorithms = list(algoritmsDict.values())
+    else:
+        for algorithm in args.algorithms:
+            algorithms.append(algoritmsDict[algorithm])
+
 
     #queueingFunction = depthFirstSearch
     #queueingFunction = breadthFirstSearch
@@ -78,27 +146,26 @@ if __name__ == "__main__":
 
     #configFinal   = FSC
 
-    C1 = (Config(N, [1,2,3,4,9,5,7,8,13,6,10,12,0,14,11,15]),
-          FSC)
+    C1       =  (Config(N,  [1,2,3,4,9,5,7,8,13,6,10,12,0,14,11,15]),
+                 FSC)        
 
-    C2 = (Config(N, [9,12,13,7,0,14,5,2,6,1,4,8,10,15,3,11]),
-          Config(N, [9,5,12,7,14,13,0,8,1,3,2,4,6,10,15,11]))
+    C2       =  (Config(N,  [9,12,13,7,0,14,5,2,6,1,4,8,10,15,3,11]),
+                 Config(N,  [9,5,12,7,14,13,0,8,1,3,2,4,6,10,15,11]))
 
-    C3 = (Config(N, [6,12,5,9,14,2,4,11,0,7,8,13,3,10,1,15]),
-          Config(N, [14,6,12,9,7,2,5,11,8,4,13,15,3,10,1,0]))
+    C3       =  (Config(N,  [6,12,5,9,14,2,4,11,0,7,8,13,3,10,1,15]),
+                 Config(N,  [14,6,12,9,7,2,5,11,8,4,13,15,3,10,1,0]))
 
-    CsemSol = (Config(N, [1,2,3,4,9,5,7,8,13,6,10,12,0,11,14,15]),
-               FSC)
+    CsemSol  =  (Config(N,  [1,2,3,4,9,5,7,8,13,6,10,12,0,11,14,15]),
+                 FSC)        
 
-    inputs = [C1, C2, C3, CsemSol]
-    algorithms = [depthFirstSearch, breadthFirstSearch, iterativeDepthFirstSearch, greedySearch, aStarSearch] 
+    configsIAMail = [C1, C2, C3, CsemSol]
+    # configsRandom = [C1[0]]
 
-    for configs in inputs:
-        configInicial = configs[0] 
-        configFinal   = configs[1] 
-        for i in range(5):
-            if i > 2:
-                evaluate(configInicial, configFinal, algorithms[i], i)
+    for config in configsRandom:
+        configInicial = config
+        configFinal   = FSC
+        for algorithm in algorithms:
+            evaluate(configInicial, configFinal, algorithm)
             
 
 

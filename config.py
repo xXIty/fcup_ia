@@ -1,11 +1,13 @@
+import random
+
 class Config:
     
     def __init__(self, N, board):
         self.N          =  N                  
-        self.board      =  board              
+        self.board      =  board.copy()              
         self.blank      =  board.index(0)     
         self.blankModN  =  self.blank % self.N
-        self.heuristic = None
+        self.heuristic  =  None
 
     def __eq__(self, other):
         return  self.board == other.board  
@@ -80,19 +82,19 @@ class Config:
     def getSuccessors(self):
         childs = []
         if self.canMoveLeft():
-            configNew = Config(self.N, self.board.copy())
+            configNew = Config(self.N, self.board)
             configNew.moveLeft()
             childs.append(configNew)
         if self.canMoveRight():
-            configNew = Config(self.N, self.board.copy())
+            configNew = Config(self.N, self.board)
             configNew.moveRight()
             childs.append(configNew)
         if self.canMoveUp():
-            configNew = Config(self.N, self.board.copy())
+            configNew = Config(self.N, self.board)
             configNew.moveUp()
             childs.append(configNew)
         if self.canMoveDown():
-            configNew = Config(self.N, self.board.copy())
+            configNew = Config(self.N, self.board)
             configNew.moveDown()
             childs.append(configNew)
         return childs
@@ -119,4 +121,23 @@ class Config:
         #self.heuristic = self.heuristicManhattan(configFinal)
         self.heuristic = self.heuristicMisplaced(configFinal)
         
-        
+    def scramble(self, moves):
+        while moves > 0:
+            randomMove = random.randint(0,3)
+            match randomMove:
+                case 0:
+                    if self.canMoveUp():
+                        self.moveUp()
+                        moves -= 1
+                case 1:
+                    if self.canMoveDown():
+                        self.moveDown()
+                        moves -= 1
+                case 2:
+                    if self.canMoveRight():
+                        self.moveRight()
+                        moves -= 1
+                case 3:
+                    if self.canMoveLeft():
+                        self.moveLeft()
+                        moves -= 1
