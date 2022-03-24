@@ -13,6 +13,12 @@ class QueueingFunction(Enum):
     # GULOSA  =  auto()
     # A_STAR  =  auto()
 
+nodeCount = None
+
+def getNodeCount():
+    global nodeCount
+    return nodeCount
+
 def thereIsNoSolution(configIni, configFin):
       invi = configIni.getInv()  
       invf = configFin.getInv()  
@@ -30,6 +36,8 @@ def makeDescendants(node):
         for successor in node.data.getSuccessors():
             if node.parent == None or successor != node.parent.data:
                 descendantList.append(TreeNode(successor,node))
+            else:
+                del successor
         node.children = descendantList
         return descendantList
 
@@ -44,6 +52,7 @@ def nodeCreatesCycle(node):
     return cycleExists
 
 def depthFirstSearch(descendantList, queue, configFinal):
+    global nodeCount
     for descendant in descendantList:
         if nodeCreatesCycle(descendant):
             del descendant
@@ -51,6 +60,7 @@ def depthFirstSearch(descendantList, queue, configFinal):
         else:
             queue.insert(0,descendant)
             updateTreePaint(descendant)
+            nodeCount += 1
 
 def iterativeDepthFirstSearchRecursive(maxDepth, currentDepth, node, configFinal):
     updateTreePaint(node)
@@ -69,6 +79,8 @@ def iterativeDepthFirstSearchRecursive(maxDepth, currentDepth, node, configFinal
 
         # Continue DFS through this descendant
         else: 
+            global nodeCount
+            nodeCount += 1
             result  =  iterativeDepthFirstSearchRecursive(  maxDepth,
                                                             currentDepth+1,
                                                             descendant,
@@ -86,6 +98,8 @@ def iterativeDepthFirstSearch(configInicial, configFinal):
     result = None
     depth = 1
     root = TreeNode(configInicial)
+    global nodeCount
+    nodeCount = 1
 
     while result is None:
         initTree(root)
@@ -94,21 +108,27 @@ def iterativeDepthFirstSearch(configInicial, configFinal):
     return result
 
 def breadthFirstSearch(descendantList, queue, configFinal):
+    global nodeCount
     for descendant in descendantList:
         if nodeCreatesCycle(descendant):
+            del descendant
             continue
         else:
             queue.append(descendant)
             updateTreePaint(descendant)
+            nodeCount += 1
 
 def greedySearch(descendantList, queue, configFinal):
+    global nodeCount
     for descendant in descendantList:
         if nodeCreatesCycle(descendant):
+            del descendant
             continue
         else:
             descendant.data.setHeuristics(configFinal)
             queue.append(descendant)
             updateTreePaint(descendant)
+            nodeCount += 1
     minNode = min(queue, key=lambda node: node.data.heuristic)
     indexMin = queue.index(minNode)
     queue.pop(indexMin)
@@ -116,13 +136,16 @@ def greedySearch(descendantList, queue, configFinal):
         
 
 def aStarSearch(descendantList, queue, configFinal):
+    global nodeCount
     for descendant in descendantList:
         if nodeCreatesCycle(descendant):
+            del descendant
             continue
         else:
             descendant.data.setHeuristics(configFinal)
             queue.append(descendant)
             updateTreePaint(descendant)
+            nodeCount += 1
     minNode = min(queue, key=lambda node: (node.data.heuristic + node.depth))
     indexMin = queue.index(minNode)
     queue.pop(indexMin)
@@ -139,6 +162,8 @@ def GeneralSearchAlgorithm(queueingFunction, configInicial, configFinal):
     # Using a list for the queue allows to use it as queue or stack.
     queue = [TreeNode(configInicial)]
     initTree(queue[0])
+    global nodeCount
+    nodeCount = 1
 
     while queue:
         node = queue.pop(0)

@@ -116,7 +116,7 @@ class Config:
         return result
 
     def setHeuristics(self, configFinal):
-        self.heuristic = self.heuristicManhattan(configFinal)
-        #self.heuristic = self.heuristicMisplaced(configFinal)
+        #self.heuristic = self.heuristicManhattan(configFinal)
+        self.heuristic = self.heuristicMisplaced(configFinal)
         
         

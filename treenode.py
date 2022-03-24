@@ -1,12 +1,10 @@
-from ete3 import Tree, TextFace, NodeStyle, TreeStyle
-from cv2 import VideoWriter, VideoWriter_fourcc, imread, imshow
 
-tree = Tree()
-videoWriter = VideoWriter('outputs/output.avi', VideoWriter_fourcc('M','J','P','G'), 10, (600, 600))
 treeInsertCounter = 0
+tree = None
+videoWriter = None
 
-#DEBUG = False
-DEBUG = True
+DEBUG = False
+#DEBUG = True
 
 class TreeNode:
     def __init__(self,data, parent=None):
@@ -28,9 +26,13 @@ class TreeNode:
 def initTree(root):
     if not DEBUG:
         return
+    from ete3 import Tree, TextFace, NodeStyle, TreeStyle
+    from cv2 import VideoWriter, VideoWriter_fourcc, imread, imshow
     global tree
     global treeInsertCounter
     global videoWriter
+    tree = Tree()
+    videoWriter = VideoWriter('outputs/output.avi', VideoWriter_fourcc('M','J','P','G'), 10, (600, 600))
     treeInsertCounter = 0
     tree = Tree()
     tree.add_child(name=str(id(root)))
