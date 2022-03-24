@@ -16,7 +16,8 @@ class SolutionInfo:
                 nodes          =  0,
                 pathStr        =  None,
                 configFinal    =  None,
-                configInicial  =  None):
+                configInicial  =  None,
+                errorMsg       =  None):
 
         self.solved         =  solved
         self.depth          =  depth
@@ -25,6 +26,7 @@ class SolutionInfo:
         self.pathStr        =  pathStr
         self.configInicial  =  configInicial
         self.configFinal    =  configFinal
+        self.errorMsg       =  errorMsg
 
 @contextmanager
 def timeout(time):
@@ -36,7 +38,8 @@ def timeout(time):
     try:
         yield
     except TimeoutError:
-        solutionInfo = SolutionInfo(solved = False)
+        errorMsg = "Error: Time out reached"
+        solutionInfo = SolutionInfo(solved = False, errorMsg = errorMsg)
         return solutionInfo
         pass
     finally:
@@ -70,7 +73,7 @@ def evaluate(configInicial, configFinal, algorithmName, timeoutSeconds):
         # Fill solutionInfo object with data
         solutionInfo = None
         if isinstance(searchResult, str):
-            solutionInfo = SolutionInfo(solved = False)
+            solutionInfo = SolutionInfo(solved = False, errorMsg = searchResult)
         else:
             solutionInfo                =  SolutionInfo(solved = True)
             solutionInfo.executionTime  =  searchTime                    
@@ -101,12 +104,12 @@ if __name__ == "__main__":
             type     = int,
             help     = 'Try to solve R random configurations.')
 
-    parser.add_argument('-s' ,
-            dest = 'summary',
+    parser.add_argument('-q' ,
+            dest = 'quiet',
             required = False,
             default  = False,
             action   = 'store_true',
-            help     = 'Hide indivdual solutions and show only the results summary')
+            help     = 'Only print Summary Results')
     
     parser.add_argument('-p' ,
             dest = 'path',
@@ -247,22 +250,30 @@ if __name__ == "__main__":
 
             solutionInfo = evaluate(configInicial, configFinal, algorithm, args.timeoutSeconds)
 
-            if solutionInfo is not None and solutionInfo.solved:
+            if solutionInfo.solved:
                 configsSolved += 1
 
                 solutionInfoMean.depth          +=  solutionInfo.depth
                 solutionInfoMean.executionTime  +=  solutionInfo.executionTime
                 solutionInfoMean.nodes          +=  solutionInfo.nodes
 
-                if not args.summary:
 
-                    print("Solution information")
+            if not args.quiet:
+                print("Solution information")
+                print("\tConfigInitial: " + str(configInicial.board))
+                print("\tConfigFinal: " + str(configFinal.board))
+
+                if solutionInfo is None:
+                    print("\t [!] Error: Time out reached")
+
+                elif not solutionInfo.solved:
+                    print('\t'+solutionInfo.errorMsg)
+
+                elif solutionInfo.solved:
                     print("\tTime untill solution: " + str(solutionInfo.executionTime) + " s")
                     print("\tSpace: " + str(solutionInfo.nodes) + " nos")
                     print("\tDepth: " + str(solutionInfo.depth) )
                     print("\tAlgorithm: " + algorithm)
-                    print("\tConfigInitial: " + str(configInicial.board))
-                    print("\tConfigFinal: " + str(configFinal.board))
                     if args.path:
                         print("\tPath to solution: \n" + solutionInfo.pathStr)
 
