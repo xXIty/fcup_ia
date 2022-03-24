@@ -99,7 +99,7 @@ class Config:
             childs.append(configNew)
         return childs
 
-    def heuristicManhattan(self, configFinal):
+    def setHeuristicManhattan(self, configFinal):
         manhattanDist = 0
         for index in range(len(self.board)):
             indexFinal = configFinal.board.index(self.board[index])
@@ -108,18 +108,15 @@ class Config:
             x2 = int(indexFinal % self.N)
             y2 = int(indexFinal / self.N)
             manhattanDist += abs(x1 - x2) + abs(y1 - y2)
-        return manhattanDist
+        self.heuristic = manhattanDist
             
-    def heuristicMisplaced(self, configFinal):
+    def setHeuristicMisplaced(self, configFinal):
         result = 0
         for position in range(len(self.board)):
             if self.board[position] != configFinal.board[position]:
                 result += 1
-        return result
+        self.heuristic = result
 
-    def setHeuristics(self, configFinal):
-        #self.heuristic = self.heuristicManhattan(configFinal)
-        self.heuristic = self.heuristicMisplaced(configFinal)
         
     def scramble(self, moves):
         while moves > 0:
