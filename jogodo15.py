@@ -200,6 +200,8 @@ def getPathString(node):
 algoritmsDict = {    "DFS"     :  depthFirstSearch,
                      "BFS"     :  breadthFirstSearch,
                      "IDFS"    :  iterativeDepthFirstSearch,
-                     "GREEDY"  :  greedySearch,
-                     "ASTAR"   :  aStarSearch }
+                     "GREEDY_MIS"  :  greedySearch,
+                     "GREEDY_MAN"  :  greedySearch,
+                     "ASTAR_MIS"   :  aStarSearch,
+                     "ASTAR_MAN"   :  aStarSearch }
 

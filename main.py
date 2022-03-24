@@ -149,15 +149,12 @@ if __name__ == "__main__":
             type     = int,
             help     = 'Timeout each search after T seconds. Default = 10')
 
-    parser.add_argument('-H' ,
-            dest = 'heuristic',
+    parser.add_argument('-o' ,
+            dest = 'format',
             required = False,
-            metavar  = 'heuristic',
-            default  = 0,
-            choices  = [0,1],
-            nargs    = 1,
-            type     = int,
-            help     = 'Choose the heuristic for informed searches. (0: manhattan, 1: missplaced)')
+            default  = False,
+            action   = 'store_true',
+            help     = 'Change table format from grid to tsv (tab separated values)')
 
     parser.add_argument('-a',
             required = False,
@@ -185,11 +182,6 @@ if __name__ == "__main__":
     # Final Standard Configuration of The 15 puzzle
     FSC        =  Config(N,  args.configFinal)
 
-    # confA      =  Config(N,  [1,2,3,4,5,6,8,12,13,9,0,7,14,11,10,15])
-    # confB      =  Config(N,  [1,2,3,4,13,6,8,12,5,9,0,7,14,11,10,15])
-    # confLink1  =  Config(N,  [12,1,10,2,7,11,4,14,5,0,9,15,8,13,6,3])
-    # confEasy   =  Config(N,  [1,2,3,4,5,6,7,8,9,10,11,12,13,14,0,15])
-    # confMail   =  Config(N,  [1,2,3,4,9,5,7,8,13,6,10,12,0,14,11,15])
 
     # C1       =  (Config(N,  [1,2,3,4,9,5,7,8,13,6,10,12,0,14,11,15]),
                  # FSC)        
@@ -200,11 +192,16 @@ if __name__ == "__main__":
     # CsemSol  =  (Config(N,  [1,2,3,4,9,5,7,8,13,6,10,12,0,11,14,15]),
                  # FSC)        
     # configsIAMail = [C1, C2, C3, CsemSol]
+    frmtgrid = ''
+    if args.format:
+        frmtgrid = 'tsv'
+    else:
+        frmtgrid = 'grid'
+
 
     configurations  =  []
     algorithms     =  []
 
-    setHeuristic(args.heuristic)
     # Generate <args.configs> random solvable configurations
     if args.configInitial is not None:
         for config in args.configInitial:
@@ -236,6 +233,11 @@ if __name__ == "__main__":
     outputTableData    = []
 
     for algorithm in algorithms:
+        if algorithm[-4:] == "_MAN":
+            setHeuristic(0)
+        if algorithm[-4:] == "_MIS":
+            setHeuristic(1)
+
         configsSolved = 0
         solutionInfoMean = SolutionInfo(solved = True)
 
@@ -255,11 +257,11 @@ if __name__ == "__main__":
                 if not args.summary:
 
                     print("Solution information")
-                    print("\tTempo ate solução: " + str(solutionInfo.executionTime) + " s")
-                    print("\tEspaco: " + str(solutionInfo.nodes) + " nos")
+                    print("\tTime untill solution: " + str(solutionInfo.executionTime) + " s")
+                    print("\tSpace: " + str(solutionInfo.nodes) + " nos")
                     print("\tDepth: " + str(solutionInfo.depth) )
-                    print("\tAlgoritmo: " + algorithm)
-                    print("\tConfigInicial: " + str(configInicial.board))
+                    print("\tAlgorithm: " + algorithm)
+                    print("\tConfigInitial: " + str(configInicial.board))
                     print("\tConfigFinal: " + str(configFinal.board))
                     if args.path:
                         print("\tPath to solution: \n" + solutionInfo.pathStr)
@@ -280,8 +282,7 @@ if __name__ == "__main__":
     print("\tMaximum optimal solution depth: " + str(args.maxOptimal))
     print("\tNumber of configurations tested: " + str(len(configurations)))
     print("\tTimeout used: " + str(args.timeoutSeconds) + ' s')
-    print("\tSelected heuristic: " + str(args.heuristic))
-    print(tabulate(outputTableData, headers=outputTableHeaders, tablefmt="grid"))
+    print(tabulate(outputTableData, headers=outputTableHeaders, tablefmt=frmtgrid))
 
 
 
