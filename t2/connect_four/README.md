@@ -27,7 +27,7 @@ The binary will be placed in `target/debug/connect_four`
 
 To see usage run the following command:
 
-``
+`./connect_four --help`
 
 # EXAMPLES
 
