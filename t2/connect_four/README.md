@@ -21,10 +21,18 @@ To install the needed dependencies and build the program execute the following c
 ```bash
 cargo build
 ```
+The binary will be placed in `target/debug/connect_four`
 
 # USAGE
 
-`cargo run`
+To see usage run the following command:
+
+``
 
 # EXAMPLES
 
+`connect_four -d 3 -a MCTS -s`
+
+- `-d 3`: Make the algorithms run with a depth of 3
+- `-a MCTS`: Choose the MCTS algorithm to play against.
+- `-s`: Let the user play the first turn.
