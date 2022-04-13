@@ -1,10 +1,9 @@
 # SYSTEM INFORMATION
 
-Language used: Rust
-Compiler version: `rustc 1.60.0`
-Pacage manager version: `cargo 1.60.0`
-
-Operating System used for development and testing:
+- Language used: Rust
+- Compiler version: `rustc 1.60.0`
+- Pacage manager version: `cargo 1.60.0`
+- Operating System used for development and testing:
 
 ```
 Linux 5.16.12-arch1-1 #1 SMP PREEMPT Wed, 02 Mar 2022 12:22:51 +0000 x86_64 GNU/Linux
