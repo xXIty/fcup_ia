@@ -1,6 +1,9 @@
 # SYSTEM INFORMATION
 
 Language used: Rust
+Compiler version: `rustc 1.60.0`
+Pacage manager version: `cargo 1.60.0`
+
 Operating System used for development and testing:
 
 ```
