@@ -1,4 +1,14 @@
+//
+// External dependencies imports
+// =============================
+//
 use clap::{Arg, Command}; // Command line parser
+                          
+//
+// Custom modules import
+// ======================
+//
+mod connect_four;
 
 fn main() {
 
@@ -46,4 +56,6 @@ fn main() {
     // Variable initializations
     // ==========================
     //
+    let state = connect_four::State::new();
+    
 }
