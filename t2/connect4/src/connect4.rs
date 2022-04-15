@@ -4,15 +4,25 @@
 //
 
 use std::fmt;
+use dict::{Dict, DictIface};
 use enum_map::{enum_map, Enum, EnumMap};
 
-const BOARD_WIDTH: usize = 7;
-const BOARD_HIGHT: usize = 6;
-const BOARD_SIZE:  usize = BOARD_HIGHT*BOARD_WIDTH;
+// Standard Board size
+const  BOARD_WIDTH:  usize    =  7;                                      
+const  BOARD_HIGHT:  usize    =  6;                                      
+const  BOARD_SIZE:   usize    =  BOARD_HIGHT*BOARD_WIDTH;                
 
+// Constants to do the state evaluation.
+// Based on R. L. Rivest, Game Tree Searching by Min/Max Approximation, AI 34 [1988], pp. 77-96
+const  EVAL_SEG_4:  [i32;  5]  =  [0, 1, 10, 50, 512];
+const  EVAL_WIN:    i32        =  EVAL_SEG_4[4];
+const  EVAL_TURN:   [i32;  2]  =  [16, -16];            
+
+
+#[derive(Copy, Clone)]
 enum Player {
-    MAX,
-    MIN,
+    MAX = 0,
+    MIN = 1,
 }
 
 #[derive(Enum, PartialEq, Copy, Clone)]
@@ -25,6 +35,7 @@ enum SlotType {
 pub struct State {
     turn:  Player,
     board: [[SlotType; BOARD_WIDTH]; BOARD_HIGHT],
+    heuristic: Option<i32>,
 }
 
 impl State {
@@ -34,26 +45,72 @@ impl State {
         State {
             turn:  Player::MAX,
             board: [[SlotType::EMPTY; BOARD_WIDTH]; BOARD_HIGHT],
+            heuristic: None,
         }
+    }
+    
+    // Calculates the heuristic of the state.
+    pub fn get_heuristic(&mut self) -> i32 {
+
+        if self.heuristic == None {
+            self.set_heuristic();
+        }
+
+        return self.heuristic.unwrap();
+    }
+
+    fn set_heuristic(&mut self) {
+        
+        // Initialize evaluation with bonus from whos turn is.
+        let mut eval: i32 = EVAL_TURN[self.turn as usize];
+
+        // Check each segment of 4 slots
+        'eval_state: for row in 0..BOARD_WIDTH {
+            for col in 0..BOARD_HIGHT {
+                let eval_slot = self.eval_segments_of_4(row, col);
+                if eval_slot == -EVAL_SEG_4[4] || eval_slot == EVAL_SEG_4[4] {
+                    eval = eval_slot;
+                    break 'eval_state;
+                }
+                else {
+                    eval += eval_slot;
+                }
+            }
+        }
+
+        self.heuristic = Some(eval);
+    }
+
+    // Returns the evaluation of all possible segments of 4 slots from a given slot
+    fn eval_segments_of_4(&self, row: usize, col: usize) -> i32 {
+        let     horizontal_count = 0;
+        let mut horizontal_type  = self.board[row][col];
+
+        horizontal_count += (self.board[row][col] != SlotType::EMPTY) as i32;
+
+        // Check if slot starts horizontal 4-segment
+        if row < BOARD_WIDTH-3 {
+            for i in 1..4 {
+//                match horizontal_type {
+//                    SlotType::EMPTY => {
+//                    }
+//                    - =>
+            }
+        }
+
+        return 0;
     }
         
     // Returns true if the game is over.
-    pub  fn  is_terminal(&self)  ->  bool  {
-        return self.heuristic() == 512 || self.heuristic() == -512
+    pub fn is_terminal(&mut self)  ->  bool  {
+        if self.heuristic == None {
+            self.set_heuristic();
+        }
+        return self.heuristic == Some(EVAL_WIN) || self.heuristic == Some(-EVAL_WIN);
     }
 
     // Returns the winner of the state.
     pub  fn  utility(&self)      ->  i32   {return 0;}
-
-    // Returns the heuristic value of the state.
-    pub fn heuristic(&self) -> i32 {
-        let mut eval: i32 = 0;
-        for row in 0..BOARD_WIDTH {
-            for col in 0..BOARD_HIGHT {
-            }
-        }
-        return 0;
-    }
 
     // No se com retornar una llista de state amb tamany indeterminat 
     // pub  fn  successors(&self)   ->  
