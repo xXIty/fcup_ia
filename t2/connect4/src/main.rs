@@ -58,5 +58,4 @@ fn main() {
     //
     let state = connect4::State::new();
     println!("{}",state);
-    
 }

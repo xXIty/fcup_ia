@@ -4,6 +4,7 @@
 //
 
 use std::fmt;
+use enum_map::{enum_map, Enum, EnumMap};
 
 const BOARD_WIDTH: usize = 7;
 const BOARD_HIGHT: usize = 6;
@@ -14,11 +15,16 @@ enum Player {
     MIN,
 }
 
+#[derive(Enum, PartialEq, Copy, Clone)]
+enum SlotType {
+    MAX,
+    MIN,
+    EMPTY,
+}
+
 pub struct State {
-    // - Game board
-    // - Player turn
     turn:  Player,
-    board: [char; BOARD_SIZE],
+    board: [[SlotType; BOARD_WIDTH]; BOARD_HIGHT],
 }
 
 impl State {
@@ -27,7 +33,7 @@ impl State {
     pub fn new() -> State {
         State {
             turn:  Player::MAX,
-            board: ['-'; BOARD_SIZE],
+            board: [[SlotType::EMPTY; BOARD_WIDTH]; BOARD_HIGHT],
         }
     }
         
@@ -41,6 +47,11 @@ impl State {
 
     // Returns the heuristic value of the state.
     pub fn heuristic(&self) -> i32 {
+        let mut eval: i32 = 0;
+        for row in 0..BOARD_WIDTH {
+            for col in 0..BOARD_HIGHT {
+            }
+        }
         return 0;
     }
 
@@ -50,7 +61,15 @@ impl State {
 
 impl fmt::Display for State {
 
+
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+
+        // Choose which simbols to use for each player
+        let slot_type_map = enum_map! {
+            SlotType::MIN    =>  'X',
+            SlotType::MAX    =>  'O',
+            SlotType::EMPTY  =>  ' ',
+        };
 
         // Empty output
         let mut output = String::new();
@@ -59,11 +78,7 @@ impl fmt::Display for State {
         for row in 0..BOARD_HIGHT {
             output.push_str(&"|");
             for column in 0..BOARD_WIDTH {
-                let mut pos = ' ';
-                if self.board[row*BOARD_HIGHT+column] != '-' {
-                    let pos = self.board[row*BOARD_HIGHT+column];
-                }
-                output.push(pos);
+                output.push(slot_type_map[self.board[row][column]]);
             }
             output.push_str(&"|\n");
         }
