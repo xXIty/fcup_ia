@@ -8,7 +8,7 @@ use clap::{Arg, Command}; // Command line parser
 // Custom modules import
 // ======================
 //
-mod connect_four;
+mod connect4;
 
 fn main() {
 
@@ -56,6 +56,7 @@ fn main() {
     // Variable initializations
     // ==========================
     //
-    let state = connect_four::State::new();
+    let state = connect4::State::new();
+    println!("{}",state);
     
 }

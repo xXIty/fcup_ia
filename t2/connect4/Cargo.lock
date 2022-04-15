@@ -41,7 +41,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "connect_four"
+name = "connect4"
 version = "0.1.0"
 dependencies = [
  "clap",
