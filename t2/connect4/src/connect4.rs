@@ -4,7 +4,6 @@
 //
 
 use std::fmt;
-use dict::{Dict, DictIface};
 use enum_map::{enum_map, Enum, EnumMap};
 
 // Standard Board size
@@ -14,10 +13,9 @@ const  BOARD_SIZE:   usize    =  BOARD_HIGHT*BOARD_WIDTH;
 
 // Constants to do the state evaluation.
 // Based on R. L. Rivest, Game Tree Searching by Min/Max Approximation, AI 34 [1988], pp. 77-96
+const  EVAL_TURN:   [i32;  2]  =  [16, -16];            
 const  EVAL_SEG_4:  [i32;  5]  =  [0, 1, 10, 50, 512];
 const  EVAL_WIN:    i32        =  EVAL_SEG_4[4];
-const  EVAL_TURN:   [i32;  2]  =  [16, -16];            
-
 
 #[derive(Copy, Clone)]
 enum Player {
@@ -45,7 +43,7 @@ impl State {
         State {
             turn:  Player::MAX,
             board: [[SlotType::EMPTY; BOARD_WIDTH]; BOARD_HIGHT],
-            heuristic: None,
+            heuristic: Some(0),
         }
     }
     
@@ -60,7 +58,6 @@ impl State {
     }
 
     fn set_heuristic(&mut self) {
-        
         // Initialize evaluation with bonus from whos turn is.
         let mut eval: i32 = EVAL_TURN[self.turn as usize];
 
@@ -83,22 +80,126 @@ impl State {
 
     // Returns the evaluation of all possible segments of 4 slots from a given slot
     fn eval_segments_of_4(&self, row: usize, col: usize) -> i32 {
-        let     horizontal_count = 0;
-        let mut horizontal_type  = self.board[row][col];
 
-        horizontal_count += (self.board[row][col] != SlotType::EMPTY) as i32;
+        // Store exclusive MAX or MIN apparitions
+        let  mut  type_diag_down   =  SlotType::EMPTY;
+        let  mut  type_diag_up     =  SlotType::EMPTY;
+        let  mut  type_horizontal  =  SlotType::EMPTY;
+        let  mut  type_vertical    =  SlotType::EMPTY;
 
-        // Check if slot starts horizontal 4-segment
-        if row < BOARD_WIDTH-3 {
-            for i in 1..4 {
-//                match horizontal_type {
-//                    SlotType::EMPTY => {
-//                    }
-//                    - =>
+        // Store number of MAX or MIN apparitions
+        let  mut  count_diag_down   :usize  =  0;
+        let  mut  count_diag_up     :usize  =  0;
+        let  mut  count_horizontal  :usize  =  0;
+        let  mut  count_vertical    :usize  =  0;
+
+        // Check for horizontal 4-segment (right direction) and count MAX's or MIN's.
+        if col < BOARD_WIDTH-3 {
+            for new_col in col..col+4 {
+                // Try to start counting MAX's or MIN's.
+                if type_horizontal == SlotType::EMPTY {
+                    type_horizontal   = self.board[row][new_col];
+                    count_horizontal += (self.board[row][new_col] != SlotType::EMPTY) as usize;
+                }
+                // Increase MAX's or MIN's counter.
+                else if type_horizontal == self.board[row][new_col] {
+                    count_horizontal += 1;
+                }
+                // MAX and MIN's are mixed => segment without value.
+                else if type_horizontal != self.board[row][new_col] {
+                    count_horizontal = 0;
+                    break;
+                }
+                // EMPTY slot.
+                else {
+                    continue;
+                }
+            }
+        }
+        
+        // Check for vertical 4-segment (up direction) and count MAX's or MIN's.
+        if row > 3 {
+            for new_row in row..row-4 {
+                // Try to start counting MAX's or MIN's.
+                if type_vertical == SlotType::EMPTY {
+                    count_vertical += (self.board[new_row][col] != SlotType::EMPTY) as usize;
+                    type_vertical   = self.board[new_row][col];
+                }
+                // Increase MAX's or MIN's counter.
+                else if type_vertical == self.board[new_row][col] {
+                    count_vertical += 1;
+                }
+                // MAX and MIN's are mixed => segment without value.
+                else if type_vertical != self.board[new_row][col] {
+                    count_vertical = 0;
+                    break;
+                }
+                // EMPTY slot.
+                else {
+                    continue;
+                }
             }
         }
 
-        return 0;
+        // Check for up-diagonal 4-segment (right direction) and count MAX's or MIN's.
+        if row > 3 && col < BOARD_WIDTH-3 {
+            for slot_incr in 0..4 {
+
+                let new_row = row - slot_incr;
+                let new_col = col + slot_incr;
+
+                // Try to start counting MAX's or MIN's.
+                if type_diag_up == SlotType::EMPTY {
+                    count_diag_up += (self.board[new_row][new_col] != SlotType::EMPTY) as usize;
+                    type_diag_up   = self.board[new_row][new_col];
+                }
+                // Increase MAX's or MIN's counter.
+                else if type_diag_up == self.board[new_row][new_col] {
+                    count_diag_up += 1;
+                }
+                // MAX and MIN's are mixed => segment without value.
+                else if type_diag_up != self.board[new_row][new_col] {
+                    count_diag_up = 0;
+                    break;
+                }
+                // EMPTY slot.
+                else {
+                    continue;
+                }
+            }
+        }
+
+        // Check for down-diagonal 4-segment (right direction) and count MAX's or MIN's.
+        if row < BOARD_HIGHT-3 && col < BOARD_WIDTH-3 {
+            for slot_incr in 0..4 {
+
+                let new_row = row + slot_incr;
+                let new_col = col + slot_incr;
+
+                // Try to start counting MAX's or MIN's.
+                if type_diag_down == SlotType::EMPTY {
+                    count_diag_down += (self.board[new_row][new_col] != SlotType::EMPTY) as usize;
+                    type_diag_down   = self.board[new_row][new_col];
+                }
+                // Increase MAX's or MIN's counter.
+                else if type_diag_down == self.board[new_row][new_col] {
+                    count_diag_down += 1;
+                }
+                // MAX and MIN's are mixed => segment without value.
+                else if type_diag_down != self.board[new_row][new_col] {
+                    count_diag_down = 0;
+                    break;
+                }
+                // EMPTY slot.
+                else {
+                    continue;
+                }
+            }
+        }
+        return EVAL_SEG_4  [  count_horizontal  ]  +
+               EVAL_SEG_4  [  count_vertical    ]  +
+               EVAL_SEG_4  [  count_diag_down   ]  +
+               EVAL_SEG_4  [  count_diag_up     ]  ;
     }
         
     // Returns true if the game is over.
@@ -117,7 +218,6 @@ impl State {
 }
 
 impl fmt::Display for State {
-
 
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 
@@ -145,6 +245,13 @@ impl fmt::Display for State {
         output.push_str(&" ");
         for row in 0..BOARD_WIDTH {
             output.push_str(&(row+1).to_string());
+        }
+        output.push('\n');
+
+        // Print heuristic
+        if self.heuristic != None {
+            output.push_str("Heuristic of position: ".into());
+            output.push_str(&self.heuristic.unwrap().to_string());
         }
 
         // Return the output built
