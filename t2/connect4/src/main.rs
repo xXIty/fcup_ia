@@ -2,6 +2,7 @@
 // External dependencies imports
 // =============================
 //
+use std::io;
 use clap::{Arg, Command}; // Command line parser
                           
 //
@@ -56,6 +57,30 @@ fn main() {
     // Variable initializations
     // ==========================
     //
-    let state = connect4::State::new();
-    println!("{}",state);
+    let mut state = connect4::State::new();
+
+    while !state.is_terminal() {
+        println!("{}",state);
+
+        let  mut  move_valid  =  false;
+
+        while !move_valid {
+
+            // Read column to drop token
+            let  mut  move_request =  String::new();
+            println!("Enter column number where you want to drop your token:");
+            io::stdin().read_line(&mut move_request)
+                .expect("Failed to read line.");
+
+            // Try to convert column number to u8
+            let move_request: usize = match move_request.trim().parse() {
+                Ok(num) => num,
+                Err(_)  => continue,
+            };
+
+            println!("Starting to move");
+
+            move_valid = state.make_move(move_request);
+        }
+    }
 }

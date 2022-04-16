@@ -4,7 +4,7 @@
 //
 
 use std::fmt;
-use enum_map::{enum_map, Enum, EnumMap};
+use std::collections::HashMap;
 
 // Standard Board size
 const  BOARD_WIDTH:  usize    =  7;                                      
@@ -17,16 +17,15 @@ const  EVAL_TURN:   [i32;  2]  =  [16, -16];
 const  EVAL_SEG_4:  [i32;  5]  =  [0, 1, 10, 50, 512];
 const  EVAL_WIN:    i32        =  EVAL_SEG_4[4];
 
-#[derive(Copy, Clone)]
-enum Player {
+#[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
+pub enum Player {
     MAX = 0,
     MIN = 1,
 }
 
-#[derive(Enum, PartialEq, Copy, Clone)]
+#[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
 enum SlotType {
-    MAX,
-    MIN,
+    Player(Player),
     EMPTY,
 }
 
@@ -62,8 +61,8 @@ impl State {
         let mut eval: i32 = EVAL_TURN[self.turn as usize];
 
         // Check each segment of 4 slots
-        'eval_state: for row in 0..BOARD_WIDTH {
-            for col in 0..BOARD_HIGHT {
+        'eval_state: for row in 0..BOARD_HIGHT {
+            for col in 0..BOARD_WIDTH {
                 let eval_slot = self.eval_segments_of_4(row, col);
                 if eval_slot == -EVAL_SEG_4[4] || eval_slot == EVAL_SEG_4[4] {
                     eval = eval_slot;
@@ -96,23 +95,19 @@ impl State {
         // Check for horizontal 4-segment (right direction) and count MAX's or MIN's.
         if col < BOARD_WIDTH-3 {
             for new_col in col..col+4 {
-                // Try to start counting MAX's or MIN's.
-                if type_horizontal == SlotType::EMPTY {
-                    type_horizontal   = self.board[row][new_col];
-                    count_horizontal += (self.board[row][new_col] != SlotType::EMPTY) as usize;
+
+                let slot: SlotType = self.board[row][new_col];
+
+                if slot == SlotType::EMPTY {
+                    continue;
                 }
-                // Increase MAX's or MIN's counter.
-                else if type_horizontal == self.board[row][new_col] {
+                else if type_horizontal == SlotType::EMPTY || slot == type_horizontal {
+                    type_horizontal = slot;
                     count_horizontal += 1;
                 }
-                // MAX and MIN's are mixed => segment without value.
-                else if type_horizontal != self.board[row][new_col] {
+                else {
                     count_horizontal = 0;
                     break;
-                }
-                // EMPTY slot.
-                else {
-                    continue;
                 }
             }
         }
@@ -120,23 +115,19 @@ impl State {
         // Check for vertical 4-segment (up direction) and count MAX's or MIN's.
         if row > 3 {
             for new_row in row..row-4 {
-                // Try to start counting MAX's or MIN's.
-                if type_vertical == SlotType::EMPTY {
-                    count_vertical += (self.board[new_row][col] != SlotType::EMPTY) as usize;
-                    type_vertical   = self.board[new_row][col];
+
+                let slot: SlotType = self.board[new_row][col];
+
+                if slot == SlotType::EMPTY {
+                    continue;
                 }
-                // Increase MAX's or MIN's counter.
-                else if type_vertical == self.board[new_row][col] {
+                else if type_vertical == SlotType::EMPTY || slot == type_vertical {
+                    type_vertical = slot;
                     count_vertical += 1;
                 }
-                // MAX and MIN's are mixed => segment without value.
-                else if type_vertical != self.board[new_row][col] {
+                else {
                     count_vertical = 0;
                     break;
-                }
-                // EMPTY slot.
-                else {
-                    continue;
                 }
             }
         }
@@ -147,24 +138,18 @@ impl State {
 
                 let new_row = row - slot_incr;
                 let new_col = col + slot_incr;
+                let slot: SlotType = self.board[new_row][new_col];
 
-                // Try to start counting MAX's or MIN's.
-                if type_diag_up == SlotType::EMPTY {
-                    count_diag_up += (self.board[new_row][new_col] != SlotType::EMPTY) as usize;
-                    type_diag_up   = self.board[new_row][new_col];
+                if slot == SlotType::EMPTY {
+                    continue;
                 }
-                // Increase MAX's or MIN's counter.
-                else if type_diag_up == self.board[new_row][new_col] {
+                else if type_diag_up == SlotType::EMPTY || slot == type_diag_up {
+                    type_diag_up = slot;
                     count_diag_up += 1;
                 }
-                // MAX and MIN's are mixed => segment without value.
-                else if type_diag_up != self.board[new_row][new_col] {
+                else {
                     count_diag_up = 0;
                     break;
-                }
-                // EMPTY slot.
-                else {
-                    continue;
                 }
             }
         }
@@ -175,27 +160,22 @@ impl State {
 
                 let new_row = row + slot_incr;
                 let new_col = col + slot_incr;
+                let slot: SlotType = self.board[new_row][new_col];
 
-                // Try to start counting MAX's or MIN's.
-                if type_diag_down == SlotType::EMPTY {
-                    count_diag_down += (self.board[new_row][new_col] != SlotType::EMPTY) as usize;
-                    type_diag_down   = self.board[new_row][new_col];
+                if slot == SlotType::EMPTY {
+                    continue;
                 }
-                // Increase MAX's or MIN's counter.
-                else if type_diag_down == self.board[new_row][new_col] {
+                else if type_diag_down == SlotType::EMPTY || slot == type_diag_down {
+                    type_diag_down = slot;
                     count_diag_down += 1;
                 }
-                // MAX and MIN's are mixed => segment without value.
-                else if type_diag_down != self.board[new_row][new_col] {
+                else {
                     count_diag_down = 0;
                     break;
                 }
-                // EMPTY slot.
-                else {
-                    continue;
-                }
             }
         }
+
         return EVAL_SEG_4  [  count_horizontal  ]  +
                EVAL_SEG_4  [  count_vertical    ]  +
                EVAL_SEG_4  [  count_diag_down   ]  +
@@ -210,8 +190,41 @@ impl State {
         return self.heuristic == Some(EVAL_WIN) || self.heuristic == Some(-EVAL_WIN);
     }
 
+
+    // Add token from whoes player turn it is to the column specified by parameter
+    // and switch turn.
+    pub fn make_move(&mut self, column: usize) -> bool {
+
+        let mut return_val: bool = false;
+
+        // Try to drop token in given column.
+        if column < BOARD_WIDTH {
+            for row in (0..BOARD_HIGHT).rev() {
+                if self.board[row][column] == SlotType::EMPTY {
+                    self.board[row][column] = SlotType::Player(self.turn);
+                    self.turn = match self.turn {
+                        Player::MAX => Player::MIN,
+                        Player::MIN => Player::MAX,
+                    };
+                    return_val = true;
+                    self.set_heuristic();
+                    break;
+                }
+                else {
+                    continue;
+                }
+            }
+        }
+        return return_val;
+    }
+
+    // TODO WORK
+    // ===================
+    //
+    
     // Returns the winner of the state.
-    pub  fn  utility(&self)      ->  i32   {return 0;}
+    // pub  fn  utility(&self)      ->  i32   {return 0;}
+
 
     // No se com retornar una llista de state amb tamany indeterminat 
     // pub  fn  successors(&self)   ->  
@@ -220,13 +233,13 @@ impl State {
 impl fmt::Display for State {
 
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-
+        
         // Choose which simbols to use for each player
-        let slot_type_map = enum_map! {
-            SlotType::MIN    =>  'X',
-            SlotType::MAX    =>  'O',
-            SlotType::EMPTY  =>  ' ',
-        };
+        let slot_type_map: HashMap<SlotType, char>  = HashMap::from([
+            (SlotType::Player(Player::MIN)    ,  'X'),
+            (SlotType::Player(Player::MAX)    ,  'O'),
+            (SlotType::EMPTY                  ,  ' '),
+        ]);
 
         // Empty output
         let mut output = String::new();
@@ -235,7 +248,7 @@ impl fmt::Display for State {
         for row in 0..BOARD_HIGHT {
             output.push_str(&"|");
             for column in 0..BOARD_WIDTH {
-                output.push(slot_type_map[self.board[row][column]]);
+                output.push(slot_type_map[&self.board[row][column]]);
             }
             output.push_str(&"|\n");
         }
@@ -244,15 +257,21 @@ impl fmt::Display for State {
         // Print column numbers
         output.push_str(&" ");
         for row in 0..BOARD_WIDTH {
-            output.push_str(&(row+1).to_string());
+            output.push_str(&(row).to_string());
         }
         output.push('\n');
 
         // Print heuristic
         if self.heuristic != None {
-            output.push_str("Heuristic of position: ".into());
-            output.push_str(&self.heuristic.unwrap().to_string());
+            let heuristic_text = format!("Heuristic of position: {}.\n",
+                                         &self.heuristic.unwrap().to_string());
+            output.push_str(&heuristic_text);
         }
+
+        // Print whose turn it is.
+        let turn_text = format!("It is now {}'s turn.\n", 
+                                slot_type_map[&SlotType::Player(self.turn)]);
+        output.push_str(&turn_text);
 
         // Return the output built
         write!(f,"{}",output)
