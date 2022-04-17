@@ -78,9 +78,8 @@ fn main() {
                 Err(_)  => continue,
             };
 
-            println!("Starting to move");
-
-            move_valid = state.make_move(move_request);
+            // Try to make a move over the state
+            move_valid = state.result(move_request);
         }
     }
 }
