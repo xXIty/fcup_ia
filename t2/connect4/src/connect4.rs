@@ -251,7 +251,7 @@ impl State {
         if self.heuristic == None {
             self.set_heuristic();
         }
-        return self.heuristic == Some(HEURISTIC_WIN) || self.heuristic == Some(-HEURISTIC_WIN);
+        return self.heuristic.unwrap().abs() == HEURISTIC_WIN;
     }
 
 
@@ -332,10 +332,21 @@ impl fmt::Display for State {
             output.push_str(&heuristic_text);
         }
 
+        // Inform of the winner
+        if self.heuristic.unwrap().abs() == HEURISTIC_WIN {
+            let winner = match self.turn {
+                Player::MAX => CellType::Player(Player::MIN),
+                Player::MIN => CellType::Player(Player::MAX),
+            };
+            let winner_text = format!("Player with {}'s wins!!!", cell_type_map[&winner]);
+            output.push_str(&winner_text);
+        }
         // Print whose turn it is.
-        let turn_text = format!("It is now {}'s turn.\n", 
-                                cell_type_map[&CellType::Player(self.turn)]);
-        output.push_str(&turn_text);
+        else {
+            let turn_text = format!("It is now {}'s turn.\n", 
+                                    cell_type_map[&CellType::Player(self.turn)]);
+            output.push_str(&turn_text);
+        }
 
         // Return the output built
         write!(f,"{}",output)

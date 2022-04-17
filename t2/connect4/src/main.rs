@@ -82,4 +82,5 @@ fn main() {
             move_valid = state.result(move_request);
         }
     }
+    println!("{}",state);
 }
