@@ -29,6 +29,8 @@ enum CellType {
     EMPTY,
 }
 
+
+#[derive(Copy, Clone, Debug)]
 pub struct State {
     turn:       Player,                      
     board:      [[CellType; BOARD_WIDTH]; BOARD_HIGHT],
@@ -45,7 +47,7 @@ impl State {
             heuristic:  Some(HEURISTIC_TURN * (Player::MAX as i32)),
         }
     }
-    
+
     // Calculates the heuristic of the state.
     pub fn get_heuristic(&mut self) -> i32 {
 
@@ -291,7 +293,19 @@ impl State {
 
 
     // No se com retornar una llista de state amb tamany indeterminat 
-    // pub  fn  successors(&self)   ->  
+    pub fn successors(&self) -> Vec<State> {
+
+        let mut succs : Vec<State> = Vec::new(); 
+        for col in 0..BOARD_WIDTH {
+            let mut aux_state : State = *self;
+            if aux_state.result(col) {
+                succs.push(aux_state);
+
+            }
+        }
+        return succs;         
+
+    }
 }
 
 impl fmt::Display for State {
