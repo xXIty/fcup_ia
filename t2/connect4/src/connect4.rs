@@ -9,13 +9,13 @@ use std::collections::HashMap;
 // Standard Board size
 const  BOARD_WIDTH:  usize    =  7;                                      
 const  BOARD_HIGHT:  usize    =  6;                                      
-const  BOARD_SIZE:   usize    =  BOARD_HIGHT*BOARD_WIDTH;                
+pub const  BOARD_SIZE:   usize    =  BOARD_HIGHT*BOARD_WIDTH;                
 
 // Constants to do the state evaluation.
 // Based on R. L. Rivest, Game Tree Searching by Min/Max Approximation, AI 34 [1988], pp. 77-96
-const  HEURISTIC_TURN:   i32     =  16;            
-const  HEURISTIC_SEG_4: [i32; 5] =  [0, 1, 10, 50, 512];
-const  HEURISTIC_WIN:    i32     =  HEURISTIC_SEG_4[4];
+const  UTILITY_TURN:   i32     =  16;            
+const  UTILITY_SEG_4: [i32; 5] =  [0, 1, 10, 50, 512];
+const  UTILITY_WIN:    i32     =  UTILITY_SEG_4[4];
 
 #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
 pub enum Player {
@@ -34,7 +34,8 @@ enum CellType {
 pub struct State {
     turn:       Player,                      
     board:      [[CellType; BOARD_WIDTH]; BOARD_HIGHT],
-    heuristic:  Option<i32>,                 
+    utility:  Option<i32>,                 
+    depth: i32,
 }
 
 impl State {
@@ -44,85 +45,81 @@ impl State {
         State {
             turn:       Player::MAX,
             board:      [[CellType::EMPTY; BOARD_WIDTH]; BOARD_HIGHT],
-            heuristic:  Some(HEURISTIC_TURN * (Player::MAX as i32)),
+            utility:  Some(UTILITY_TURN * (Player::MAX as i32)),
+            depth: 0,
         }
     }
 
-    // Calculates the heuristic of the state.
-    pub fn get_heuristic(&mut self) -> i32 {
-
-        if self.heuristic == None {
-            self.set_heuristic();
-        }
-
-        return self.heuristic.unwrap();
+    // Calculates the utility of the state.
+    pub fn get_utility(&self) -> i32 {
+        return self.utility.unwrap();
     }
 
-    fn set_heuristic(&mut self) {
+    fn set_utility(&mut self) {
 
         // Initialize evaluation with bonus from whos turn is.
-        let mut heuristic_total: i32 = HEURISTIC_TURN * (self.turn as i32);
+        let mut utility_total: i32 = UTILITY_TURN * (self.turn as i32);
 
         // Check each segment of 4 cells
-        'calculate_heuristic: for row in (0..BOARD_HIGHT).rev() {
+        'calculate_utility: for row in (0..BOARD_HIGHT).rev() {
 
-            // Acumulate heuristics of the row
-            let mut heuristic_row: i32 = 0;
+            // Acumulate utilitys of the row
+            let mut utility_row: i32 = 0;
 
             for col in 0..BOARD_WIDTH {
 
                 // Calculate horizontal 4-segment
-                let heuristic_cell = self.heuristic_seg_4_horizontal(row, col);
-                if heuristic_cell.abs() == HEURISTIC_WIN {
-                    heuristic_total = heuristic_cell;
-                    break 'calculate_heuristic;
+                let utility_cell = self.utility_seg_4_horizontal(row, col);
+                if utility_cell.abs() == UTILITY_WIN {
+                    utility_total = utility_cell;
+                    break 'calculate_utility;
                 }
                 else {
-                    heuristic_row += heuristic_cell;
+                    utility_row += utility_cell;
                 }
 
                 // Calculate vertical 4-segment
-                let heuristic_cell = self.heuristic_seg_4_vertical(row, col);
-                if heuristic_cell.abs() == HEURISTIC_WIN {
-                    heuristic_total = heuristic_cell;
-                    break 'calculate_heuristic;
+                let utility_cell = self.utility_seg_4_vertical(row, col);
+                if utility_cell.abs() == UTILITY_WIN {
+                    utility_total = utility_cell;
+                    break 'calculate_utility;
                 }
                 else {
-                    heuristic_row += heuristic_cell;
+                    utility_row += utility_cell;
                 }
 
                 // Calculate diagonal-up 4-segment
-                let heuristic_cell = self.heuristic_seg_4_diag_up(row, col);
-                if heuristic_cell.abs() == HEURISTIC_WIN {
-                    heuristic_total = heuristic_cell;
-                    break 'calculate_heuristic;
+                let utility_cell = self.utility_seg_4_diag_up(row, col);
+                if utility_cell.abs() == UTILITY_WIN {
+                    utility_total = utility_cell;
+                    break 'calculate_utility;
                 }
                 else {
-                    heuristic_row += heuristic_cell;
+                    utility_row += utility_cell;
                 }
 
                 // Calculate diagonal-down 4-segment
-                let heuristic_cell = self.heuristic_seg_4_diag_down(row, col);
-                if heuristic_cell.abs() == HEURISTIC_WIN {
-                    heuristic_total = heuristic_cell;
-                    break 'calculate_heuristic;
+                let utility_cell = self.utility_seg_4_diag_down(row, col);
+                if utility_cell.abs() == UTILITY_WIN {
+                    utility_total = utility_cell;
+                    break 'calculate_utility;
                 }
                 else {
-                    heuristic_row += heuristic_cell;
+                    utility_row += utility_cell;
                 }
             }
 
-            heuristic_total += heuristic_row;
+            utility_total += utility_row;
 
             // Check if it is necessary to keep moving up in the board
-            if heuristic_row == 0 {
-                break 'calculate_heuristic;
+            if utility_row == 0 {
+                break 'calculate_utility;
             }
         }
-        self.heuristic = Some(heuristic_total);
+        self.utility = Some(utility_total);
     }
 
-    fn heuristic_seg_4_horizontal(&self, row: usize, col: usize) -> i32 {
+    fn utility_seg_4_horizontal(&self, row: usize, col: usize) -> i32 {
 
         let mut type_horizontal = CellType::EMPTY;
         let mut count_horizontal :usize = 0;
@@ -147,11 +144,11 @@ impl State {
             }
         }
 
-        let  type_horizontal: i32    =  State::cell_type_to_heuristic(type_horizontal);
-        return type_horizontal * HEURISTIC_SEG_4[count_horizontal];
+        let  type_horizontal: i32    =  State::cell_type_to_utility(type_horizontal);
+        return type_horizontal * UTILITY_SEG_4[count_horizontal];
     }
 
-    fn heuristic_seg_4_vertical(&self, row: usize, col: usize) -> i32 {
+    fn utility_seg_4_vertical(&self, row: usize, col: usize) -> i32 {
 
         let  mut  type_vertical    =  CellType::EMPTY;
         let  mut  count_vertical    :usize  =  0;
@@ -175,11 +172,11 @@ impl State {
                 }
             }
         }
-        let  type_vertical: i32  =  State::cell_type_to_heuristic(type_vertical);
-        return HEURISTIC_SEG_4[count_vertical] * type_vertical;
+        let  type_vertical: i32  =  State::cell_type_to_utility(type_vertical);
+        return UTILITY_SEG_4[count_vertical] * type_vertical;
     }
 
-    fn heuristic_seg_4_diag_up(&self, row: usize, col: usize) -> i32 {
+    fn utility_seg_4_diag_up(&self, row: usize, col: usize) -> i32 {
 
         let  mut  type_diag_up     =  CellType::EMPTY;
         let  mut  count_diag_up :usize  =  0;
@@ -205,11 +202,11 @@ impl State {
                 }
             }
         }
-        let  type_diag_up: i32     =  State::cell_type_to_heuristic(type_diag_up);
-        return HEURISTIC_SEG_4[count_diag_up] * type_diag_up;
+        let  type_diag_up: i32     =  State::cell_type_to_utility(type_diag_up);
+        return UTILITY_SEG_4[count_diag_up] * type_diag_up;
     }
 
-    fn heuristic_seg_4_diag_down(&self, row: usize, col: usize) -> i32 {
+    fn utility_seg_4_diag_down(&self, row: usize, col: usize) -> i32 {
 
         let  mut  type_diag_down   =  CellType::EMPTY;
         let  mut  count_diag_down   :usize  =  0;
@@ -235,11 +232,11 @@ impl State {
                 }
             }
         }
-        let  type_diag_down: i32   =  State::cell_type_to_heuristic(type_diag_down);
-        return HEURISTIC_SEG_4[count_diag_down] * type_diag_down;
+        let  type_diag_down: i32   =  State::cell_type_to_utility(type_diag_down);
+        return UTILITY_SEG_4[count_diag_down] * type_diag_down;
     }
 
-    fn cell_type_to_heuristic(cell_type: CellType) -> i32 {
+    fn cell_type_to_utility(cell_type: CellType) -> i32 {
         match cell_type {
             CellType::EMPTY                =>   0,
             CellType::Player(Player::MAX)  =>   1,
@@ -249,11 +246,11 @@ impl State {
 
         
     // Returns true if the game is over.
-    pub fn is_terminal(&mut self)  ->  bool  {
-        if self.heuristic == None {
-            self.set_heuristic();
-        }
-        return self.heuristic.unwrap().abs() == HEURISTIC_WIN;
+    pub fn is_terminal(&self, depth: i32)  ->  bool  {
+        let mut terminal: bool = self.depth == depth;
+        terminal |= self.depth == BOARD_SIZE as i32;
+        terminal |= self.utility.unwrap().abs() == UTILITY_WIN;
+        return terminal;
     }
 
 
@@ -272,8 +269,9 @@ impl State {
                         Player::MAX => Player::MIN,
                         Player::MIN => Player::MAX,
                     };
+                    self.depth = self.depth + 1;
                     return_val = true;
-                    self.set_heuristic();
+                    self.set_utility();
                     break;
                 }
                 else {
@@ -339,15 +337,15 @@ impl fmt::Display for State {
         }
         output.push('\n');
 
-        // Print heuristic
-        if self.heuristic != None {
-            let heuristic_text = format!("Heuristic of position: {}.\n",
-                                         &self.heuristic.unwrap().to_string());
-            output.push_str(&heuristic_text);
+        // Print utility
+        if self.utility != None {
+            let utility_text = format!("Heuristic of position: {}.\n",
+                                         &self.utility.unwrap().to_string());
+            output.push_str(&utility_text);
         }
 
         // Inform of the winner
-        if self.heuristic.unwrap().abs() == HEURISTIC_WIN {
+        if self.utility.unwrap().abs() == UTILITY_WIN {
             let winner = match self.turn {
                 Player::MAX => CellType::Player(Player::MIN),
                 Player::MIN => CellType::Player(Player::MAX),
@@ -366,3 +364,53 @@ impl fmt::Display for State {
         write!(f,"{}",output)
     }
 }
+
+
+// input current state, return next state
+pub fn minimax_decision(state: &mut State, depth: i32) -> i32 {
+    let v = max_value(state, depth);
+    return v;
+
+}
+
+fn max_value(state: &State, depth: i32) -> i32 {
+    if state.is_terminal(depth) {
+        return state.get_utility();
+    }
+    let mut v: i32 = i32::MIN;
+    let mut v_vec: Vec<i32> = Vec::new();
+    for s in state.successors() {
+        let min = min_value(&s, depth);
+        v = std::cmp::max(v, min);
+        v_vec.push(min);
+    }
+    println!("MAX_VALUE FOR STATE: depth {}\n{}",state.depth, &state);
+    for min in v_vec {
+        print!("{} ", min);
+    }
+    print!("\n");
+    println!("MAX_VALUE -> {}", v);
+    return v;
+}
+
+fn min_value(state: &State, depth: i32) -> i32 {
+    if state.is_terminal(depth) {
+        return state.get_utility();
+    }
+    let mut v: i32 = i32::MAX;
+    let mut v_vec: Vec<i32> = Vec::new();
+    for s in state.successors() {
+        let max = max_value(&s, depth);
+        v = std::cmp::min(v, max);
+        v_vec.push(max);
+    }
+    println!("MIN_VALUE FOR STATE: depth {}\n{}",state.depth, &state);
+    for max in v_vec {
+        print!("{} ", max);
+    }
+    print!("\n");
+    println!("MIN_VALUE -> {}", v);
+    return v;
+
+}
+

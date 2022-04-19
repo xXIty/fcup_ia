@@ -59,7 +59,7 @@ fn main() {
     //
     let mut state = connect4::State::new();
 
-    while !state.is_terminal() {
+    while !state.is_terminal(connect4::BOARD_SIZE as i32) {
         println!("{}",state);
 
         let  mut  move_valid  =  false;
@@ -82,6 +82,7 @@ fn main() {
             move_valid = state.result(move_request);
 
             //debug_successors(&state);
+            debug_minimax(&mut state);
         }
     }
     println!("{}",state);
@@ -92,8 +93,19 @@ fn debug_successors(s: &connect4::State) {
     let succs : Vec<connect4::State> = s.successors();
     println!("########################################");
     println!("DEBUG SUCCESSORS ({})", succs.len());
+    let mut i = 0;
     for successor in succs {
-        print!("{}",successor);
+        println!("{} for column {}",successor.get_utility(), i);
+        i += 1;
     }
     println!("########################################");
+}
+
+fn debug_minimax(s: &mut connect4::State) {
+
+    println!("########################################");
+    let v = connect4::minimax_decision(s, 2);
+    println!("minimax decision: {}",v);
+    println!("########################################");
+
 }
