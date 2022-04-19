@@ -10,6 +10,7 @@ use clap::{Arg, Command}; // Command line parser
 // ======================
 //
 mod connect4;
+mod connect4solver;
 
 fn main() {
 
@@ -72,7 +73,7 @@ fn main() {
             io::stdin().read_line(&mut move_request)
                 .expect("Failed to read line.");
 
-            // Try to convert column number to u8
+            // Try to convert column number to usize
             let move_request: usize = match move_request.trim().parse() {
                 Ok(num) => num,
                 Err(_)  => continue,
@@ -104,7 +105,7 @@ fn debug_successors(s: &connect4::State) {
 fn debug_minimax(s: &mut connect4::State) {
 
     println!("########################################");
-    let v = connect4::minimax_decision(s, 2);
+    let v = connect4solver::minimax_decision(s, 2);
     println!("minimax decision: {}",v);
     println!("########################################");
 
