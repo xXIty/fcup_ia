@@ -80,7 +80,20 @@ fn main() {
 
             // Try to make a move over the state
             move_valid = state.result(move_request);
+
+            //debug_successors(&state);
         }
     }
     println!("{}",state);
+}
+
+
+fn debug_successors(s: &connect4::State) {
+    let succs : Vec<connect4::State> = s.successors();
+    println!("########################################");
+    println!("DEBUG SUCCESSORS ({})", succs.len());
+    for successor in succs {
+        print!("{}",successor);
+    }
+    println!("########################################");
 }
