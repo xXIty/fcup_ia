@@ -306,8 +306,8 @@ impl fmt::Display for State {
         
         // Choose which simbols to use for each player
         let cell_type_map: HashMap<CellType, char>  = HashMap::from([
-            (CellType::Token(Player::MIN)    ,  'X'),
-            (CellType::Token(Player::MAX)    ,  'O'),
+            (CellType::Token(Player::MAX)    ,  'X'),
+            (CellType::Token(Player::MIN)    ,  'O'),
             (CellType::EMPTY                  ,  ' '),
         ]);
 
