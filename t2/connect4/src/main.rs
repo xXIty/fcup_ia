@@ -2,7 +2,6 @@
 // External dependencies imports
 // =============================
 //
-use std::io;
 use clap::{Arg, Command}; // Command line parser
                           
 //
@@ -12,13 +11,6 @@ use clap::{Arg, Command}; // Command line parser
 mod connect4;
 mod connect4solver;
 
-#[derive(Debug)]
-enum Algorithm {
-    User,
-    Minimax(i32),
-    AlphaBeta,
-    MCTS,
-}
 
 fn main() {
 
@@ -68,63 +60,20 @@ fn main() {
     //
     let mut state = connect4::State::new();
     let depth: i32 = command.value_of("depth").unwrap().parse().unwrap();
-    let p1 = Algorithm::User;
-    let p2 = Algorithm::Minimax(depth);
-
+  //  let p1 = connect4solver::Algorithm::User;
+    let p1 = connect4solver::Algorithm::Minimax(depth-2);
+    let p2 = connect4solver::Algorithm::Minimax(depth);
     while !state.is_terminal() {
         println!("{}",state);
-        p1.decide_and_run(&mut state);
-        println!("{}",state);
-        p2.decide_and_run(&mut state);
-
-    }
-    println!("{}",state);
-}
-
-impl Algorithm {
-
-    fn decide_and_run(&self, s: &mut connect4::State) {
-        println!("algo:  {:?}", *self);
-        match self {
-            Algorithm::User => {
-                let  mut  move_valid  =  false;
-                
-                while !move_valid {
-
-                    // Read column to drop token
-                    let  mut  action =  String::new();
-                    println!("Enter column number where you want to drop your token:");
-                    io::stdin().read_line(&mut action)
-                        .expect("Failed to read line.");
-
-                    // Try to convert column number to usize
-                    let action: usize = match action.trim().parse() {
-                        Ok(num) => num,
-                        Err(_)  => continue,
-                    };
-
-                    // Try to make a move over the state
-                    move_valid = s.result(action);
-                }
+        match state.get_player() {
+            connect4::Player::MAX=> {
+                p1.decide_and_run(&mut state);
             }
-            Algorithm::Minimax(depth) => {
-                let action = connect4solver::minimax_solver(s, *depth);
-                println!("DEPTH: {} action {:x}",depth, action);
-                s.result(action);
-            }
-            Algorithm::AlphaBeta => { 
-                println!("not implemented");
-                s.result(0);
-            }
-
-            Algorithm::MCTS => { 
-                println!("not implemented");
-                s.result(0);
+            connect4::Player::MIN=> {
+                p2.decide_and_run(&mut state);
             }
         }
-
-
     }
-
+    println!("{}",state);
 }
 
