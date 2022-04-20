@@ -63,27 +63,23 @@ impl State {
 
     pub fn set_utility(&mut self) {
 
+
         // Initialize evaluation with bonus from whos turn is.
         let mut utility_total: i32 = UTILITY_TURN * (self.turn as i32);
 
         // Check each segment of 4 cells
         'calculate_utility: for row in (0..BOARD_HIGHT).rev() {
 
-            // Acumulate utilitys of the row
-            let mut utility_row: i32 = 0;
-
             for col in 0..BOARD_WIDTH {
 
                 // Calculate horizontal 4-segment
                 let utility_cell = self.utility_seg_4_horizontal(row, col);
-                //if utility_cell.abs() == UTILITY_WIN {
-                if utility_cell == UTILITY_WIN || utility_cell == -UTILITY_WIN {
-                    println!("HORIZONTAL= {}",utility_cell);
+                if utility_cell.abs() == UTILITY_WIN {
                     utility_total = utility_cell;
                     break 'calculate_utility;
                 }
                 else {
-                    utility_row += utility_cell;
+                    utility_total += utility_cell;
                 }
 
                 // Calculate vertical 4-segment
@@ -93,7 +89,7 @@ impl State {
                     break 'calculate_utility;
                 }
                 else {
-                    utility_row += utility_cell;
+                    utility_total += utility_cell;
                 }
 
                 // Calculate diagonal-up 4-segment
@@ -103,7 +99,7 @@ impl State {
                     break 'calculate_utility;
                 }
                 else {
-                    utility_row += utility_cell;
+                    utility_total += utility_cell;
                 }
 
                 // Calculate diagonal-down 4-segment
@@ -113,18 +109,10 @@ impl State {
                     break 'calculate_utility;
                 }
                 else {
-                    utility_row += utility_cell;
+                    utility_total += utility_cell;
                 }
             }
-
-            utility_total += utility_row;
-
-            // Check if it is necessary to keep moving up in the board
-            if utility_row == 0 {
-                break 'calculate_utility;
-            }
         }
-        //println!("calculated utility: {}", utility_total);
         self.utility = Some(utility_total);
     }
 

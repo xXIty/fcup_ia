@@ -64,7 +64,6 @@ impl Algorithm {
 // Input current state, return next state
 pub fn minimax_recursive(state: &mut State, depth: i32) -> i32 {
     if depth == 0 || state.is_terminal() {
-        
         return state.get_utility();
     }
     let mut v: i32;

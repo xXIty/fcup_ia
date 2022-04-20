@@ -22,13 +22,21 @@ fn main() {
         .about("Program to study different adversarial algorithms applied to game of Connect four.")
         .arg(
             Arg::new("depth")
-                .short          (  'd'      )
-                .long           (  "depth"  )
-                .id             (  "depth"  )
+                .long           (  "d1"  )
+                .id             (  "depth1"  )
                 .required       (  false    )
                 .takes_value    (  true     )
                 .default_value  (  "6"      )
-                .help           ( "Sets the search depth for the used algorithm." )
+                .help           ( "Sets the search depth for the 1st used algorithm." )
+        )
+        .arg(
+            Arg::new("depth")
+                .long           (  "d2"  )
+                .id             (  "depth2"  )
+                .required       (  false    )
+                .takes_value    (  true     )
+                .default_value  (  "6"      )
+                .help           ( "Sets the search depth for the 2nd used algorithm." )
         )
         .arg(
             Arg::new("human_starts")
@@ -59,14 +67,18 @@ fn main() {
     // ==========================
     //
     let mut state = connect4::State::new();
-    let depth: i32 = command.value_of("depth").unwrap().parse().unwrap();
-  //  let p1 = connect4solver::Algorithm::User;
-    let p1 = connect4solver::Algorithm::Minimax(depth-2);
-    let p2 = connect4solver::Algorithm::Minimax(depth);
+
+    //let p1 = connect4solver::Algorithm::User;
+    //let p2 = connect4solver::Algorithm::User;
+    
+    let depth1: i32 = command.value_of("depth1").unwrap().parse().unwrap();
+    let depth2: i32 = command.value_of("depth1").unwrap().parse().unwrap();
+
+    let p1 = connect4solver::Algorithm::Minimax(depth1);
+    let p2 = connect4solver::Algorithm::Minimax(depth2);
+
     while !state.is_terminal() {
         println!("{}",state);
-        state.set_utility();
-        println!("UTILITY: {}",state.get_utility());
         match state.get_player() {
             connect4::Player::MAX=> {
                 p1.decide_and_run(&mut state);
@@ -75,7 +87,6 @@ fn main() {
                 p2.decide_and_run(&mut state);
             }
         }
-
     }
     println!("{}",state);
 }
