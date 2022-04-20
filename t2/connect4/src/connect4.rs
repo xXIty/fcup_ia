@@ -18,6 +18,7 @@ const  UTILITY_TURN:   i32     =  16;
 const  UTILITY_SEG_4: [i32; 5] =  [0, 1, 10, 50, 512];
 const  UTILITY_WIN:    i32     =  UTILITY_SEG_4[4];
 
+
 #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
 pub enum Player {
     MAX =  1,
@@ -49,6 +50,10 @@ impl State {
             utility:  Some(UTILITY_TURN * (Player::MAX as i32)),
             depth: 0,
         }
+    }
+
+    pub fn get_player(&self) -> Player {
+        self.turn
     }
 
     // Calculates the utility of the state.
@@ -247,11 +252,8 @@ impl State {
 
         
     // Returns true if the game is over.
-    pub fn is_terminal(&self, depth: i32)  ->  bool  {
-        let mut terminal: bool = self.depth == depth;
-        terminal |= self.depth == BOARD_SIZE as i32;
-        terminal |= self.utility.unwrap().abs() == UTILITY_WIN;
-        return terminal;
+    pub fn is_terminal(&self)  ->  bool  {
+        return self.utility.unwrap().abs() == UTILITY_WIN;
     }
 
 

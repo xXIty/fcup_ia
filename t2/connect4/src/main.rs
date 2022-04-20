@@ -12,6 +12,14 @@ use clap::{Arg, Command}; // Command line parser
 mod connect4;
 mod connect4solver;
 
+#[derive(Debug)]
+enum Algorithm {
+    User,
+    Minimax(i32),
+    AlphaBeta,
+    MCTS,
+}
+
 fn main() {
 
     // Easy command line argument parser using Clap
@@ -59,35 +67,66 @@ fn main() {
     // ==========================
     //
     let mut state = connect4::State::new();
+    let depth: i32 = 2;
+    let p1 = Algorithm::User;
+    let p2 = Algorithm::Minimax(depth);
 
-    while !state.is_terminal(connect4::BOARD_SIZE as i32) {
+    while !state.is_terminal() {
         println!("{}",state);
+        p1.decide_and_run(&mut state);
+        p2.decide_and_run(&mut state);
 
-        let  mut  move_valid  =  false;
-
-        while !move_valid {
-
-            // Read column to drop token
-            let  mut  move_request =  String::new();
-            println!("Enter column number where you want to drop your token:");
-            io::stdin().read_line(&mut move_request)
-                .expect("Failed to read line.");
-
-            // Try to convert column number to usize
-            let move_request: usize = match move_request.trim().parse() {
-                Ok(num) => num,
-                Err(_)  => continue,
-            };
-
-            // Try to make a move over the state
-            move_valid = state.result(move_request);
-
-            //debug_successors(&state);
-            debug_minimax(&mut state);
-        }
     }
     println!("{}",state);
 }
+
+impl Algorithm {
+
+    fn decide_and_run(&self, s: &mut connect4::State) {
+        println!("algo:  {:?}", *self);
+        match self {
+            Algorithm::User => {
+                let  mut  move_valid  =  false;
+                
+                while !move_valid {
+
+                    // Read column to drop token
+                    let  mut  move_request =  String::new();
+                    println!("Enter column number where you want to drop your token:");
+                    io::stdin().read_line(&mut move_request)
+                        .expect("Failed to read line.");
+
+                    // Try to convert column number to usize
+                    let move_request: usize = match move_request.trim().parse() {
+                        Ok(num) => num,
+                        Err(_)  => continue,
+                    };
+
+                    // Try to make a move over the state
+                    move_valid = s.result(move_request);
+                }
+            }
+            Algorithm::Minimax(depth) => {
+                println!("DEPTH: {}",depth);
+                let move_request = connect4solver::minimax_decision(s, *depth);
+                s.result(move_request as usize);
+            }
+            Algorithm::AlphaBeta => { 
+                println!("not implemented");
+                s.result(0);
+            }
+
+            Algorithm::MCTS => { 
+                println!("not implemented");
+                s.result(0);
+            }
+        }
+
+
+    }
+
+}
+
 
 
 fn debug_successors(s: &connect4::State) {
