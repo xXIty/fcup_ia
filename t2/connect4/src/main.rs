@@ -11,7 +11,6 @@ use clap::{Arg, Command}; // Command line parser
 mod connect4;
 mod connect4solver;
 
-
 fn main() {
 
     // Easy command line argument parser using Clap
@@ -39,22 +38,28 @@ fn main() {
                 .help           ( "Sets the search depth for the 2nd used algorithm." )
         )
         .arg(
-            Arg::new("human_starts")
-                .short        (  's'             )
-                .long         (  "human_starts"  )
-                .required     (  false           )
-                .takes_value  (  false           )
-                .help         ( "Lets you start the game" )
-        )
-        .arg(
-            Arg::new("algorithm")
-                .short            (  'a'            )
-                .long             (  "algorithm"    )
-                .id               (  "algorithm"    )
+            Arg::new("player1")
+                .long             (  "p1"           )
+                .value_name       (  "type"         )
                 .required         (  false          )
                 .takes_value      (  true           )
                 .default_value    (  "MINMAX"       )
-                .possible_values  (  ["MINMAX",     
+                .possible_values  (  ["INTERACTIVE",
+                                     "MINMAX",
+                                     "MINMAX",     
+                                     "ALPHA-BETA",  
+                                     "MCTS"]        )
+                .help             ( "Algorithm to play against" ) 
+        )
+        .arg(
+            Arg::new("player2")
+                .long             (  "p2"           )
+                .value_name       (  "type"         )
+                .required         (  false          )
+                .takes_value      (  true           )
+                .default_value    (  "MINMAX"       )
+                .possible_values  (  ["INTERACTIVE",
+                                     "MINMAX",     
                                      "ALPHA-BETA",  
                                      "MCTS"]        )
                 .help             ( "Algorithm to play against" ) 
@@ -67,24 +72,23 @@ fn main() {
     // ==========================
     //
     let mut state = connect4::State::new();
-
-    //let p1 = connect4solver::Algorithm::User;
-    //let p2 = connect4solver::Algorithm::User;
-    
-    let depth1: i32 = command.value_of("depth1").unwrap().parse().unwrap();
-    let depth2: i32 = command.value_of("depth1").unwrap().parse().unwrap();
-
-    let p1 = connect4solver::Algorithm::Minimax(depth1);
-    let p2 = connect4solver::Algorithm::Minimax(depth2);
+//
+//    let p1 = connect4solver::Algorithm::User;
+//    let p2 = connect4solver::Algorithm::User;
+//    
+    let depth1: u32 = command.value_of("depth1").unwrap().parse().unwrap();
+    let depth2: u32 = command.value_of("depth2").unwrap().parse().unwrap();
+    let p1 = connect4solver::get_solver(command.value_of("player1").unwrap(), depth1);
+    let p2 = connect4solver::get_solver(command.value_of("player2").unwrap(), depth2);
 
     while !state.is_terminal() {
         println!("{}",state);
         match state.get_player() {
             connect4::Player::MAX=> {
-                p1.decide_and_run(&mut state);
+                p1.play(&mut state);
             }
             connect4::Player::MIN=> {
-                p2.decide_and_run(&mut state);
+                p2.play(&mut state);
             }
         }
     }
