@@ -2,7 +2,6 @@
 // External dependencies imports
 // =============================
 //
-use std::io;
 use clap::{Arg, Command}; // Command line parser
                           
 //
@@ -12,12 +11,13 @@ use clap::{Arg, Command}; // Command line parser
 mod connect4;
 mod connect4solver;
 
+
 fn main() {
 
     // Easy command line argument parser using Clap
     // ==============================================
     //
-    Command::new("Connect Four")
+    let command = Command::new("Connect Four")
         .author("Jordi Garcia & Miquel roset")
         .about("Program to study different adversarial algorithms applied to game of Connect four.")
         .arg(
@@ -59,54 +59,21 @@ fn main() {
     // ==========================
     //
     let mut state = connect4::State::new();
-
-    while !state.is_terminal(connect4::BOARD_SIZE as i32) {
+    let depth: i32 = command.value_of("depth").unwrap().parse().unwrap();
+  //  let p1 = connect4solver::Algorithm::User;
+    let p1 = connect4solver::Algorithm::Minimax(depth-2);
+    let p2 = connect4solver::Algorithm::Minimax(depth);
+    while !state.is_terminal() {
         println!("{}",state);
-
-        let  mut  move_valid  =  false;
-
-        while !move_valid {
-
-            // Read column to drop token
-            let  mut  move_request =  String::new();
-            println!("Enter column number where you want to drop your token:");
-            io::stdin().read_line(&mut move_request)
-                .expect("Failed to read line.");
-
-            // Try to convert column number to usize
-            let move_request: usize = match move_request.trim().parse() {
-                Ok(num) => num,
-                Err(_)  => continue,
-            };
-
-            // Try to make a move over the state
-            move_valid = state.result(move_request);
-
-            //debug_successors(&state);
-            debug_minimax(&mut state);
+        match state.get_player() {
+            connect4::Player::MAX=> {
+                p1.decide_and_run(&mut state);
+            }
+            connect4::Player::MIN=> {
+                p2.decide_and_run(&mut state);
+            }
         }
     }
     println!("{}",state);
 }
 
-
-fn debug_successors(s: &connect4::State) {
-    let succs : Vec<connect4::State> = s.successors();
-    println!("########################################");
-    println!("DEBUG SUCCESSORS ({})", succs.len());
-    let mut i = 0;
-    for successor in succs {
-        println!("{} for column {}",successor.get_utility(), i);
-        i += 1;
-    }
-    println!("########################################");
-}
-
-fn debug_minimax(s: &mut connect4::State) {
-
-    println!("########################################");
-    let v = connect4solver::minimax_decision(s, 2);
-    println!("minimax decision: {}",v);
-    println!("########################################");
-
-}

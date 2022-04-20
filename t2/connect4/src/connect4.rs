@@ -10,13 +10,14 @@ use std::collections::HashMap;
 // Standard Board size
 const  BOARD_WIDTH:  usize    =  7;                                      
 const  BOARD_HIGHT:  usize    =  6;                                      
-pub const  BOARD_SIZE:   usize    =  BOARD_HIGHT*BOARD_WIDTH;                
+const  BOARD_SIZE:   usize    =  BOARD_HIGHT*BOARD_WIDTH;                
 
 // Constants to do the state evaluation.
 // Based on R. L. Rivest, Game Tree Searching by Min/Max Approximation, AI 34 [1988], pp. 77-96
 const  UTILITY_TURN:   i32     =  16;            
 const  UTILITY_SEG_4: [i32; 5] =  [0, 1, 10, 50, 512];
 const  UTILITY_WIN:    i32     =  UTILITY_SEG_4[4];
+
 
 #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
 pub enum Player {
@@ -26,7 +27,7 @@ pub enum Player {
 
 #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
 enum CellType {
-    Player(Player),
+    Token(Player),
     EMPTY,
 }
 
@@ -49,6 +50,10 @@ impl State {
             utility:  Some(UTILITY_TURN * (Player::MAX as i32)),
             depth: 0,
         }
+    }
+
+    pub fn get_player(&self) -> Player {
+        self.turn
     }
 
     // Calculates the utility of the state.
@@ -117,6 +122,7 @@ impl State {
                 break 'calculate_utility;
             }
         }
+        //println!("calculated utility: {}", utility_total);
         self.utility = Some(utility_total);
     }
 
@@ -240,20 +246,18 @@ impl State {
     fn cell_type_to_utility(cell_type: CellType) -> i32 {
         match cell_type {
             CellType::EMPTY                =>   0,
-            CellType::Player(Player::MAX)  =>   1,
-            CellType::Player(Player::MIN)  =>  -1,
+            CellType::Token(Player::MAX)  =>   1,
+            CellType::Token(Player::MIN)  =>  -1,
         }
     }
 
         
     // Returns true if the game is over.
-    pub fn is_terminal(&self, depth: i32)  ->  bool  {
-        let mut terminal: bool = self.depth == depth;
-        terminal |= self.depth == BOARD_SIZE as i32;
-        terminal |= self.utility.unwrap().abs() == UTILITY_WIN;
-        return terminal;
+    pub fn is_terminal(&self)  ->  bool  {
+        return self.utility.unwrap().abs() == UTILITY_WIN;
     }
 
+    
 
     // Add token from whoes player turn it is to the column specified by parameter
     // and switch turn.
@@ -265,7 +269,7 @@ impl State {
         if column < BOARD_WIDTH {
             for row in (0..BOARD_HIGHT).rev() {
                 if self.board[row][column] == CellType::EMPTY {
-                    self.board[row][column] = CellType::Player(self.turn);
+                    self.board[row][column] = CellType::Token(self.turn);
                     self.turn = match self.turn {
                         Player::MAX => Player::MIN,
                         Player::MIN => Player::MAX,
@@ -283,26 +287,17 @@ impl State {
         return return_val;
     }
 
-    // TODO WORK
-    // ===================
-    //
-    
-    // Returns the winner of the state.
-    // pub  fn  utility(&self)      ->  i32   {return 0;}
+    pub fn actions(&self) -> Vec<usize> {
 
-
-    // No se com retornar una llista de state amb tamany indeterminat 
-    pub fn successors(&self) -> Vec<State> {
-
-        let mut succs : Vec<State> = Vec::new(); 
+        let mut acts : Vec<usize> = Vec::new(); 
         for col in 0..BOARD_WIDTH {
-            let mut aux_state : State = *self;
-            if aux_state.result(col) {
-                succs.push(aux_state);
-
-            }
+            match self.board[0][col] {
+                CellType::EMPTY => acts.push(col),
+                _ => continue,
+            };
+            
         }
-        return succs;         
+        return acts;         
 
     }
 }
@@ -313,8 +308,8 @@ impl fmt::Display for State {
         
         // Choose which simbols to use for each player
         let cell_type_map: HashMap<CellType, char>  = HashMap::from([
-            (CellType::Player(Player::MIN)    ,  'X'),
-            (CellType::Player(Player::MAX)    ,  'O'),
+            (CellType::Token(Player::MIN)    ,  'X'),
+            (CellType::Token(Player::MAX)    ,  'O'),
             (CellType::EMPTY                  ,  ' '),
         ]);
 
@@ -348,8 +343,8 @@ impl fmt::Display for State {
         // Inform of the winner
         if self.utility.unwrap().abs() == UTILITY_WIN {
             let winner = match self.turn {
-                Player::MAX => CellType::Player(Player::MIN),
-                Player::MIN => CellType::Player(Player::MAX),
+                Player::MAX => CellType::Token(Player::MIN),
+                Player::MIN => CellType::Token(Player::MAX),
             };
             let winner_text = format!("Player with {}'s wins!!!", cell_type_map[&winner]);
             output.push_str(&winner_text);
@@ -357,7 +352,7 @@ impl fmt::Display for State {
         // Print whose turn it is.
         else {
             let turn_text = format!("It is now {}'s turn.\n", 
-                                    cell_type_map[&CellType::Player(self.turn)]);
+                                    cell_type_map[&CellType::Token(self.turn)]);
             output.push_str(&turn_text);
         }
 
