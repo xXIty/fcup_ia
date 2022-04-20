@@ -256,6 +256,7 @@ impl State {
         return self.utility.unwrap().abs() == UTILITY_WIN;
     }
 
+    
 
     // Add token from whoes player turn it is to the column specified by parameter
     // and switch turn.
@@ -285,26 +286,17 @@ impl State {
         return return_val;
     }
 
-    // TODO WORK
-    // ===================
-    //
-    
-    // Returns the winner of the state.
-    // pub  fn  utility(&self)      ->  i32   {return 0;}
+    pub fn actions(&self) -> Vec<usize> {
 
-
-    // No se com retornar una llista de state amb tamany indeterminat 
-    pub fn successors(&self) -> Vec<State> {
-
-        let mut succs : Vec<State> = Vec::new(); 
+        let mut acts : Vec<usize> = Vec::new(); 
         for col in 0..BOARD_WIDTH {
-            let mut aux_state : State = *self;
-            if aux_state.result(col) {
-                succs.push(aux_state);
-
-            }
+            match self.board[0][col] {
+                CellType::EMPTY => acts.push(col),
+                _ => continue,
+            };
+            
         }
-        return succs;         
+        return acts;         
 
     }
 }

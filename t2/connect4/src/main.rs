@@ -108,8 +108,8 @@ impl Algorithm {
             }
             Algorithm::Minimax(depth) => {
                 println!("DEPTH: {}",depth);
-                let move_request = connect4solver::minimax_decision(s, *depth);
-                s.result(move_request as usize);
+                connect4solver::minimax_solver(s, *depth);
+                s.result(0);
             }
             Algorithm::AlphaBeta => { 
                 println!("not implemented");
@@ -127,25 +127,3 @@ impl Algorithm {
 
 }
 
-
-
-fn debug_successors(s: &connect4::State) {
-    let succs : Vec<connect4::State> = s.successors();
-    println!("########################################");
-    println!("DEBUG SUCCESSORS ({})", succs.len());
-    let mut i = 0;
-    for successor in succs {
-        println!("{} for column {}",successor.get_utility(), i);
-        i += 1;
-    }
-    println!("########################################");
-}
-
-fn debug_minimax(s: &mut connect4::State) {
-
-    println!("########################################");
-    let v = connect4solver::minimax_decision(s, 2);
-    println!("minimax decision: {}",v);
-    println!("########################################");
-
-}
