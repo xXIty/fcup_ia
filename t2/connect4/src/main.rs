@@ -65,6 +65,8 @@ fn main() {
     let p2 = connect4solver::Algorithm::Minimax(depth);
     while !state.is_terminal() {
         println!("{}",state);
+        state.set_utility();
+        println!("UTILITY: {}",state.get_utility());
         match state.get_player() {
             connect4::Player::MAX=> {
                 p1.decide_and_run(&mut state);
@@ -73,6 +75,7 @@ fn main() {
                 p2.decide_and_run(&mut state);
             }
         }
+
     }
     println!("{}",state);
 }

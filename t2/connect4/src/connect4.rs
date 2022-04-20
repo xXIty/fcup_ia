@@ -61,7 +61,7 @@ impl State {
         return self.utility.unwrap();
     }
 
-    fn set_utility(&mut self) {
+    pub fn set_utility(&mut self) {
 
         // Initialize evaluation with bonus from whos turn is.
         let mut utility_total: i32 = UTILITY_TURN * (self.turn as i32);
@@ -76,7 +76,9 @@ impl State {
 
                 // Calculate horizontal 4-segment
                 let utility_cell = self.utility_seg_4_horizontal(row, col);
-                if utility_cell.abs() == UTILITY_WIN {
+                //if utility_cell.abs() == UTILITY_WIN {
+                if utility_cell == UTILITY_WIN || utility_cell == -UTILITY_WIN {
+                    println!("HORIZONTAL= {}",utility_cell);
                     utility_total = utility_cell;
                     break 'calculate_utility;
                 }
@@ -254,7 +256,15 @@ impl State {
         
     // Returns true if the game is over.
     pub fn is_terminal(&self)  ->  bool  {
-        return self.utility.unwrap().abs() == UTILITY_WIN;
+        let mut terminal: bool = true;
+        for col in 0..BOARD_WIDTH {
+            if self.board[0][col] == CellType::EMPTY {
+                terminal = false;
+                break;
+            }
+        }
+        terminal |= self.utility.unwrap().abs() == UTILITY_WIN;
+        return terminal;
     }
 
     
