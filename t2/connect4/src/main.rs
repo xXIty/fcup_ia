@@ -25,7 +25,7 @@ fn main() {
     // Easy command line argument parser using Clap
     // ==============================================
     //
-    Command::new("Connect Four")
+    let command = Command::new("Connect Four")
         .author("Jordi Garcia & Miquel roset")
         .about("Program to study different adversarial algorithms applied to game of Connect four.")
         .arg(
@@ -67,13 +67,14 @@ fn main() {
     // ==========================
     //
     let mut state = connect4::State::new();
-    let depth: i32 = 2;
+    let depth: i32 = command.value_of("depth").unwrap().parse().unwrap();
     let p1 = Algorithm::User;
     let p2 = Algorithm::Minimax(depth);
 
     while !state.is_terminal() {
         println!("{}",state);
         p1.decide_and_run(&mut state);
+        println!("{}",state);
         p2.decide_and_run(&mut state);
 
     }
@@ -91,25 +92,25 @@ impl Algorithm {
                 while !move_valid {
 
                     // Read column to drop token
-                    let  mut  move_request =  String::new();
+                    let  mut  action =  String::new();
                     println!("Enter column number where you want to drop your token:");
-                    io::stdin().read_line(&mut move_request)
+                    io::stdin().read_line(&mut action)
                         .expect("Failed to read line.");
 
                     // Try to convert column number to usize
-                    let move_request: usize = match move_request.trim().parse() {
+                    let action: usize = match action.trim().parse() {
                         Ok(num) => num,
                         Err(_)  => continue,
                     };
 
                     // Try to make a move over the state
-                    move_valid = s.result(move_request);
+                    move_valid = s.result(action);
                 }
             }
             Algorithm::Minimax(depth) => {
-                println!("DEPTH: {}",depth);
-                connect4solver::minimax_solver(s, *depth);
-                s.result(0);
+                let action = connect4solver::minimax_solver(s, *depth);
+                println!("DEPTH: {} action {:x}",depth, action);
+                s.result(action);
             }
             Algorithm::AlphaBeta => { 
                 println!("not implemented");
