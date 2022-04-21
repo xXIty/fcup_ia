@@ -21,18 +21,18 @@ To install the needed dependencies and build the program execute the following c
 ```bash
 cargo build
 ```
-The binary will be placed in `target/debug/connect_four`
+The binary will be placed in `target/debug/connect4`
 
 # USAGE
 
 To see usage run the following command:
 
-`./connect_four --help`
+`./connect4 --help`
 
 # EXAMPLES
 
-`connect_four -d 3 -a MCTS -s`
+`connect4 --p1 ALPHA-BETA --d1 3 --p2 INTERACTIVE`
 
-- `-d 3`: Make the algorithms run with a depth of 3
-- `-a MCTS`: Choose the MCTS algorithm to play against.
-- `-s`: Let the user play the first turn.
+- `--d1 3`: Configure 1st player to run with a depth of 3 (if any algorithm selected)
+- `--p1 ALPHA-BETA`: Configure 1st player to use the ALPHA-BETA algorithm .
+- `--p2 INTERACTIVE`: Configure 2nd player to play with user moves.
