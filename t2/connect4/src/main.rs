@@ -11,6 +11,7 @@ use std::time::Instant;
 //
 mod connect4;
 mod connect4solver;
+mod treenode;
 
 fn main() {
 
@@ -39,6 +40,24 @@ fn main() {
                 .help           ( "Sets the search depth for the 2nd used algorithm." )
         )
         .arg(
+            Arg::new("iterations")
+                .long           (  "i1"  )
+                .id             (  "iter1"  )
+                .required       (  false    )
+                .takes_value    (  true     )
+                .default_value  (  "4"      )
+                .help           ( "Sets the number of iterations for the MCTS algorithm (p1)" )
+        )
+        .arg(
+            Arg::new("iterations")
+                .long           (  "i2"  )
+                .id             (  "iter2"  )
+                .required       (  false    )
+                .takes_value    (  true     )
+                .default_value  (  "4"      )
+                .help           ( "Sets the number of iterations for the MCTS algorithms (p2)" )
+        )
+        .arg(
             Arg::new("player1")
                 .long             (  "p1"           )
                 .value_name       (  "type"         )
@@ -49,7 +68,7 @@ fn main() {
                                      "MINMAX",
                                      "MINMAX",     
                                      "ALPHA-BETA",  
-                                     "ALPHA-BETA-O",
+                                     "ALPHA-BETA-ORD",
                                      "MCTS"]        )
                 .help             ( "Algorithm to play against" ) 
         )
@@ -63,7 +82,7 @@ fn main() {
                 .possible_values  (  ["INTERACTIVE",
                                      "MINMAX",     
                                      "ALPHA-BETA",  
-                                     "ALPHA-BETA-O",
+                                     "ALPHA-BETA-ORD",
                                      "MCTS"]        )
                 .help             ( "Algorithm to play against" ) 
         )
@@ -84,22 +103,28 @@ fn main() {
     // ==========================
     //
 
-    let mut game_round: u128 = 0;
+    // Parse Commandline args
+    let  solver_str1          =  args.value_of("player1").unwrap();
+    let  solver_str2          =  args.value_of("player2").unwrap();
+
+    let  output_quiet:  bool  =  args.is_present("quiet");
+
+    let  depth1:        u32   =  args.value_of("depth1").unwrap().parse().unwrap();
+    let  depth2:        u32   =  args.value_of("depth2").unwrap().parse().unwrap();
+
+    let  iter1:         u32   =  args.value_of("iter1").unwrap().parse().unwrap();
+    let  iter2:         u32   =  args.value_of("iter2").unwrap().parse().unwrap();
+
+    // Game initializations
+    let  mut  game_round:        u128  =  0;
+    let  mut  p1_turn_time_sum:  u128  =  0;
+    let  mut  p2_turn_time_sum:  u128  =  0;
+
     let mut state = connect4::State::new();
 
-    let output_quiet: bool = args.is_present("quiet");
+    let mut p1 = connect4solver::get_solver(solver_str1, depth1, iter1);
+    let mut p2 = connect4solver::get_solver(solver_str2, depth2, iter2);
 
-    let solve_method1 = args.value_of("player1").unwrap();
-    let solve_method2 = args.value_of("player2").unwrap();
-
-    let depth1: u32 = args.value_of("depth1").unwrap().parse().unwrap();
-    let depth2: u32 = args.value_of("depth2").unwrap().parse().unwrap();
-
-    let p1 = connect4solver::get_solver(solve_method1, depth1);
-    let p2 = connect4solver::get_solver(solve_method2, depth2);
-
-    let mut p1_turn_time_sum: u128 = 0;
-    let mut p2_turn_time_sum: u128 = 0;
 
     // Gameplay
     // =========
@@ -129,17 +154,26 @@ fn main() {
         game_round += 1;
     }
 
+    // Print end state if not quiet output
+    if !output_quiet {
+        println!("{}",state);
+    }
+
     // Calculate mean turn time elapsed per player
     let p1_turn_time_mean: u128 = p1_turn_time_sum / game_round;
     let p2_turn_time_mean: u128 = p2_turn_time_sum / game_round;
     
+    // Print statistics
     println!("Game statistics!");
-    println!("Mean time spent per turn.");
-    println!("# {} {} {}", solve_method1, depth1, p1_turn_time_mean);
-    println!("# {} {} {}", solve_method2, depth2, p2_turn_time_mean);
+    println!("Solve-Method  \tdepth  \tMean-Turn-Time \tNodes-Expanded");
+    println!("# {} \t{} \t{} \t{}", solver_str1,
+                                    depth1,
+                                    p1_turn_time_mean,
+                                    p1.get_nodes_expanded());
+    println!("# {} \t{} \t{} \t{}", solver_str2,
+                                    depth2,
+                                    p2_turn_time_mean,
+                                    p2.get_nodes_expanded());
 
-    if !output_quiet {
-        println!("{}",state);
-    }
 }
 
