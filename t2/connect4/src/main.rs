@@ -10,6 +10,7 @@ use clap::{Arg, Command}; // Command line parser
 //
 mod connect4;
 mod connect4solver;
+mod treenode;
 
 fn main() {
 
@@ -36,6 +37,24 @@ fn main() {
                 .takes_value    (  true     )
                 .default_value  (  "6"      )
                 .help           ( "Sets the search depth for the 2nd used algorithm." )
+        )
+        .arg(
+            Arg::new("iterations")
+                .long           (  "i1"  )
+                .id             (  "iter1"  )
+                .required       (  false    )
+                .takes_value    (  true     )
+                .default_value  (  "4"      )
+                .help           ( "Sets the number of iterations for the MCTS algorithm (p1)" )
+        )
+        .arg(
+            Arg::new("iterations")
+                .long           (  "i2"  )
+                .id             (  "iter2"  )
+                .required       (  false    )
+                .takes_value    (  true     )
+                .default_value  (  "4"      )
+                .help           ( "Sets the number of iterations for the MCTS algorithms (p2)" )
         )
         .arg(
             Arg::new("player1")
@@ -78,8 +97,10 @@ fn main() {
 //    
     let depth1: u32 = command.value_of("depth1").unwrap().parse().unwrap();
     let depth2: u32 = command.value_of("depth2").unwrap().parse().unwrap();
-    let p1 = connect4solver::get_solver(command.value_of("player1").unwrap(), depth1);
-    let p2 = connect4solver::get_solver(command.value_of("player2").unwrap(), depth2);
+    let iter1: u32 = command.value_of("iter1").unwrap().parse().unwrap();
+    let iter2: u32 = command.value_of("iter2").unwrap().parse().unwrap();
+    let p1 = connect4solver::get_solver(command.value_of("player1").unwrap(), depth1, iter1);
+    let p2 = connect4solver::get_solver(command.value_of("player2").unwrap(), depth2, iter2);
 
     while !state.is_terminal() {
         println!("{}",state);
