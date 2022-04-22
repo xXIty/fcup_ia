@@ -165,7 +165,7 @@ fn main() {
     
     // Print statistics
     println!("Game statistics!");
-    println!("Solve-Method  \tdepth  \tMean-Turn-Time \tNodes-Expanded");
+    println!("[!] Solve-Method  \tdepth  \tMean-Turn-Time \tNodes-Expanded");
     println!("# {} \t{} \t{} \t{}", solver_str1,
                                     depth1,
                                     p1_turn_time_mean,
