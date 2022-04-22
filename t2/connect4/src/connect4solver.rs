@@ -5,14 +5,15 @@
 use crate::connect4::State;
 use crate::connect4::Player;
 use std::io;
-use std::cmp::{max,min};
+use std::cmp::{max, min};
 
 pub fn get_solver(s: &str, depth: u32) -> Box<dyn Solver> {
     match s {
-        "INTERACTIVE"  =>  Box::new(Interactive  {                 }),
-        "MINMAX"       =>  Box::new(Minimax      {  depth:  depth  }),
-        "ALPHA-BETA"   =>  Box::new(AlphaBeta    {  depth:  depth  }),
-        _              =>  Box::new(Interactive  {                 }),
+        "INTERACTIVE"   =>  Box::new(Interactive    {                 }),
+        "MINMAX"        =>  Box::new(Minimax        {  depth:  depth  }),
+        "ALPHA-BETA"    =>  Box::new(AlphaBeta      {  depth:  depth  }),
+        "ALPHA-BETA-O"  =>  Box::new(AlphaBetaWOrd  {  depth: depth   }),
+        _               =>  Box::new(Interactive    {                 }),
     }
 }
 
@@ -26,7 +27,7 @@ pub struct Minimax {
 impl Solver for Minimax {
     fn play(&self, s: &mut State) {
         let action = minimax_solver(s, self.depth);
-        println!("DEPTH: {} action {:x}",self.depth, action);
+        //println!("DEPTH: {} action {:x}",self.depth, action);
         s.result(action);
     }
 }
@@ -37,9 +38,51 @@ pub struct AlphaBeta {
 impl Solver for AlphaBeta {
     fn play(&self, s: &mut State) {
         let action = alpha_beta(s, self.depth);
-        //println!("DEPTH: {} action {:x}",self.depth, action);
         s.result(action);
     }
+}
+
+pub struct AlphaBetaWOrd {
+    pub depth: u32,
+}
+impl Solver for AlphaBetaWOrd {
+    fn play(&self, s: &mut State) {
+        let action = alpha_beta_w_ordering(s, self.depth);
+        s.result(action);
+    }
+}
+
+pub fn alpha_beta_w_ordering(state: &mut State, depth:u32) -> usize {
+    let mut action: usize = 0xdeadbeaf;
+    let mut v: i32;
+    match state.get_player() {
+        Player::MAX => {
+            v = i32::MIN;
+            for a in state.actions() {
+                let mut new_state = state.clone();
+                new_state.result(a);
+                let min = alpha_beta_w_ordering_min_value(&mut new_state, depth - 1, i32::MIN, i32::MAX);
+                if min > v {
+                   v = min;
+                   action = a;
+                }
+            }
+        }
+        Player::MIN => {
+            v = i32::MAX;
+            for a in state.actions() {
+                let mut new_state = state.clone();
+                new_state.result(a);
+                let max = alpha_beta_w_ordering_max_value(&mut new_state, depth - 1, i32::MIN, i32::MAX);
+                if max < v {
+                   v = max;
+                   action = a;
+                }
+                
+            }
+        }
+    }
+    return action;
 }
 
 pub struct Interactive {}
@@ -129,6 +172,62 @@ pub fn minimax_solver(state: &mut State, depth: u32) -> usize {
         }
     }
     return action;
+}
+
+fn alpha_beta_w_ordering_max_value(state: &mut State, depth:u32, mut alpha: i32, beta:i32) -> i32 {
+    if depth == 0 || state.is_terminal() {
+        return state.get_utility();
+    }
+    let mut v = i32::MIN;
+    
+    // Generate all successor states
+    let mut states_unordered = Vec::new();
+    for a in state.actions() {
+        let mut new_state = state.clone();
+        new_state.result(a);
+        states_unordered.push(new_state); 
+    }
+    // Order
+    let mut states_ordered = State::order_list(states_unordered);
+    states_ordered.reverse();
+
+    // Do actuall algorithm
+    for mut state in states_ordered {
+        v = max(v, alpha_beta_w_ordering_min_value(&mut state, depth - 1, alpha, beta));
+        if v >= beta {
+            return v;
+        }
+        alpha = max(v, alpha);
+    }
+    return v;
+}
+
+fn alpha_beta_w_ordering_min_value(state: &mut State, depth:u32, alpha: i32, mut beta:i32) -> i32 {
+    if depth == 0 || state.is_terminal() {
+        return state.get_utility();
+    }
+
+    // Generate all successor states
+    let mut states_unordered = Vec::new();
+    for a in state.actions() {
+        let mut new_state = state.clone();
+        new_state.result(a);
+        states_unordered.push(new_state); 
+    }
+
+    // Order
+    let states_ordered = State::order_list(states_unordered);
+
+    // Do actuall algorithm
+    let mut v = i32::MAX;
+    for mut state in states_ordered {
+        v = min(v, alpha_beta_w_ordering_max_value(&mut state, depth - 1, alpha, beta));
+        if v <= alpha {
+            return v;
+        }
+        beta = min(beta, v);
+    }
+    return v;
 }
 
 fn alpha_beta_max_value(state: &mut State, depth:u32, mut alpha: i32, beta:i32) -> i32 {

@@ -3,6 +3,7 @@
 // =============================
 //
 use clap::{Arg, Command}; // Command line parser
+use std::time::Instant;
                           
 //
 // Custom modules import
@@ -16,7 +17,7 @@ fn main() {
     // Easy command line argument parser using Clap
     // ==============================================
     //
-    let command = Command::new("Connect Four")
+    let args = Command::new("Connect Four")
         .author("Jordi Garcia & Miquel roset")
         .about("Program to study different adversarial algorithms applied to game of Connect four.")
         .arg(
@@ -48,6 +49,7 @@ fn main() {
                                      "MINMAX",
                                      "MINMAX",     
                                      "ALPHA-BETA",  
+                                     "ALPHA-BETA-O",
                                      "MCTS"]        )
                 .help             ( "Algorithm to play against" ) 
         )
@@ -61,8 +63,18 @@ fn main() {
                 .possible_values  (  ["INTERACTIVE",
                                      "MINMAX",     
                                      "ALPHA-BETA",  
+                                     "ALPHA-BETA-O",
                                      "MCTS"]        )
                 .help             ( "Algorithm to play against" ) 
+        )
+        .arg(
+            Arg::new("quiet")
+                .short            (  'q'            )
+                .long             (  "quiet"        )
+                .value_name       (  "quiet"        )
+                .required         (  false          )
+                .takes_value      (  false          )
+                .help             ( "Output statistic information only." ) 
         )
         .after_help("With which depth can you beat me? ;))")
         .get_matches();
@@ -71,27 +83,63 @@ fn main() {
     // Variable initializations
     // ==========================
     //
-    let mut state = connect4::State::new();
-//
-//    let p1 = connect4solver::Algorithm::User;
-//    let p2 = connect4solver::Algorithm::User;
-//    
-    let depth1: u32 = command.value_of("depth1").unwrap().parse().unwrap();
-    let depth2: u32 = command.value_of("depth2").unwrap().parse().unwrap();
-    let p1 = connect4solver::get_solver(command.value_of("player1").unwrap(), depth1);
-    let p2 = connect4solver::get_solver(command.value_of("player2").unwrap(), depth2);
 
+    let mut game_round: u128 = 0;
+    let mut state = connect4::State::new();
+
+    let output_quiet: bool = args.is_present("quiet");
+
+    let solve_method1 = args.value_of("player1").unwrap();
+    let solve_method2 = args.value_of("player2").unwrap();
+
+    let depth1: u32 = args.value_of("depth1").unwrap().parse().unwrap();
+    let depth2: u32 = args.value_of("depth2").unwrap().parse().unwrap();
+
+    let p1 = connect4solver::get_solver(solve_method1, depth1);
+    let p2 = connect4solver::get_solver(solve_method2, depth2);
+
+    let mut p1_turn_time_sum: u128 = 0;
+    let mut p2_turn_time_sum: u128 = 0;
+
+    // Gameplay
+    // =========
+    //
     while !state.is_terminal() {
-        println!("{}",state);
+
+        // Verbose output (not quiet)
+        if !output_quiet {
+            println!("{}",state);
+        }
+
+        // Play a turn and do timing
         match state.get_player() {
             connect4::Player::MAX=> {
+                let p1_turn_start = Instant::now();
                 p1.play(&mut state);
+                let p1_turn_elapsed = p1_turn_start.elapsed().as_micros();
+                p1_turn_time_sum += p1_turn_elapsed;
             }
             connect4::Player::MIN=> {
+                let p2_turn_start = Instant::now();
                 p2.play(&mut state);
+                let p2_turn_elapsed = p2_turn_start.elapsed().as_micros();
+                p2_turn_time_sum += p2_turn_elapsed;
             }
         }
+        game_round += 1;
     }
-    println!("{}",state);
+
+    // Calculate mean turn time elapsed per player
+    let p1_turn_time_mean: u128 = p1_turn_time_sum / game_round;
+    let p2_turn_time_mean: u128 = p2_turn_time_sum / game_round;
+    
+    println!("Game statistics!");
+    println!("Mean time spent per turn.");
+    println!("# {} {} {}", solve_method1, depth1, p1_turn_time_mean);
+    println!("# {} {} {}", solve_method2, depth2, p2_turn_time_mean);
+
+    if !output_quiet {
+        println!("{}",state);
+    }
 }
 
