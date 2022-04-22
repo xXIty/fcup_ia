@@ -28,7 +28,7 @@ fn main() {
                 .required       (  false    )
                 .takes_value    (  true     )
                 .default_value  (  "6"      )
-                .help           ( "Sets the search depth for the 1st used algorithm." )
+                .help           ( "Sets the search depth for the 1st player." )
         )
         .arg(
             Arg::new("depth")
@@ -37,7 +37,7 @@ fn main() {
                 .required       (  false    )
                 .takes_value    (  true     )
                 .default_value  (  "6"      )
-                .help           ( "Sets the search depth for the 2nd used algorithm." )
+                .help           ( "Sets the search depth for the 2nd player." )
         )
         .arg(
             Arg::new("iterations")
@@ -116,7 +116,9 @@ fn main() {
     let  iter2:         u32   =  args.value_of("iter2").unwrap().parse().unwrap();
 
     // Game initializations
-    let  mut  game_round:        u128  =  0;
+    let  mut  p1_turn_count:        u128  =  0;
+    let  mut  p2_turn_count:        u128  =  0;
+
     let  mut  p1_turn_time_sum:  u128  =  0;
     let  mut  p2_turn_time_sum:  u128  =  0;
 
@@ -124,6 +126,12 @@ fn main() {
 
     let mut p1 = connect4solver::get_solver(solver_str1, depth1, iter1);
     let mut p2 = connect4solver::get_solver(solver_str2, depth2, iter2);
+
+    if solver_str1 == "MCTS" || solver_str2 == "MCTS" {
+        println!("This functionallity is not finished. Please, visit the current state in the following link or try another algorithm.");
+        println!("https://github.com/xXIty/fcup_ia/blob/master/t2/connect4/src/connect4solver.rs#L365.");
+        return;
+    }
 
 
     // Gameplay
@@ -139,19 +147,27 @@ fn main() {
         // Play a turn and do timing
         match state.get_player() {
             connect4::Player::MAX=> {
+                p1_turn_count += 1;
                 let p1_turn_start = Instant::now();
+
                 p1.play(&mut state);
+
                 let p1_turn_elapsed = p1_turn_start.elapsed().as_micros();
                 p1_turn_time_sum += p1_turn_elapsed;
+
+                //println!("{}/{} = {}", p1.get_nodes_expanded(),p1_turn_count,p1.get_nodes_expanded()/p1_turn_count);
             }
             connect4::Player::MIN=> {
+                p2_turn_count += 1;
                 let p2_turn_start = Instant::now();
+
                 p2.play(&mut state);
+
                 let p2_turn_elapsed = p2_turn_start.elapsed().as_micros();
                 p2_turn_time_sum += p2_turn_elapsed;
+                //println!("{}/{} = {}", p2.get_nodes_expanded(),p2_turn_count,p2.get_nodes_expanded()/p2_turn_count);
             }
         }
-        game_round += 1;
     }
 
     // Print end state if not quiet output
@@ -160,8 +176,8 @@ fn main() {
     }
 
     // Calculate mean turn time elapsed per player
-    let p1_turn_time_mean: u128 = p1_turn_time_sum / game_round;
-    let p2_turn_time_mean: u128 = p2_turn_time_sum / game_round;
+    let p1_turn_time_mean: u128 = p1_turn_time_sum / p1_turn_count;
+    let p2_turn_time_mean: u128 = p2_turn_time_sum / p2_turn_count;
     
     // Print statistics
     println!("Game statistics!");
@@ -169,11 +185,11 @@ fn main() {
     println!("# {} \t{} \t{} \t{}", solver_str1,
                                     depth1,
                                     p1_turn_time_mean,
-                                    p1.get_nodes_expanded());
+                                    p1.get_nodes_expanded() / p1_turn_count);
     println!("# {} \t{} \t{} \t{}", solver_str2,
                                     depth2,
                                     p2_turn_time_mean,
-                                    p2.get_nodes_expanded());
+                                    p2.get_nodes_expanded() / p2_turn_count);
 
 }
 

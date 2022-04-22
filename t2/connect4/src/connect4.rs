@@ -299,6 +299,19 @@ impl State {
         return acts;         
     }
 
+    pub fn order_list_max(mut state_vec: Vec<State>) -> Vec<State> {
+        state_vec.sort_by(|a, b| {
+            if a.get_utility() > b.get_utility() {
+                Ordering::Less
+            } else if a.get_utility() == b.get_utility() {
+                Ordering::Equal
+            } else {
+                Ordering::Greater
+            }
+        });
+        return state_vec;
+    }
+
     pub fn order_list(mut state_vec: Vec<State>) -> Vec<State> {
         state_vec.sort_by(|a, b| {
             if a.get_utility() < b.get_utility() {

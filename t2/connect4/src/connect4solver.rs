@@ -212,7 +212,6 @@ impl Solver for AlphaBetaWOrd {
 
 impl AlphaBetaWOrd {
     pub fn alpha_beta_w_ordering(&mut self, state: &mut State, depth:u32) -> usize {
-        self.nodes_expanded += 1;
         let mut action: usize = 0xdeadbeaf;
         let mut v: i32;
         match state.get_player() {

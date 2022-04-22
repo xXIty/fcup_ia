@@ -1,3 +1,4 @@
+
 # SYSTEM INFORMATION
 
 - Language used: Rust
@@ -19,9 +20,9 @@ If the machine does not have rust, install it with the distribution package mana
 To install the needed dependencies and build the program execute the following commands:
 
 ```bash
-cargo build
+cargo build --release
 ```
-The binary will be placed in `target/debug/connect4`
+The binary will be placed in `target/release/connect4`
 
 # USAGE
 
@@ -31,8 +32,4 @@ To see usage run the following command:
 
 # EXAMPLES
 
-`connect4 --p1 ALPHA-BETA --d1 3 --p2 INTERACTIVE`
-
-- `--d1 3`: Configure 1st player to run with a depth of 3 (if any algorithm selected)
-- `--p1 ALPHA-BETA`: Configure 1st player to use the ALPHA-BETA algorithm .
-- `--p2 INTERACTIVE`: Configure 2nd player to play with user moves.
+`./target/debug/connect4 --p1 INTERACTIVE --p2 ALPHA-BETA-ORD  --d2 7`
