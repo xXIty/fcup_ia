@@ -1,10 +1,3 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <vector>
-#include <map>
-#include <cmath>
 using namespace std;
 
 vector<vector<string>> parse_dataset(char* filename);
@@ -19,34 +12,7 @@ int main(int argc, char* argv[]) {
 }
 
 
-vector<vector<string>> parse_dataset(char* filename) {
-  // Create and open a text file
-  ifstream DS(filename);
-  vector<string> row;
-  vector<vector<string>> content;
-  string line, word;
-  if(DS.is_open())
-	{
-		while(getline(DS, line))
-		{
-			row.clear();
- 
-			stringstream str(line);
- 
-			while(getline(str, word, ',')) row.push_back(word);
-			content.push_back(row);
-		}
-	}
- 
-  
 
-  // Close the file
-  DS.close();
-
-
-  return content;
-
-}
 
 
 float entropy(vector<vector<string>> dataset){
