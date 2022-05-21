@@ -1,119 +1,61 @@
 #include "dataset.hh"
 
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <numeric>
+#include <map>
+#include <sstream>
 #include <string>
 
 using namespace std;
 
-Attribute::Attribute(string name) {
-    label = name; 
-}
-
-void Attribute::insert(int i, string value) {
-    
-    if (values.count(value) == 0) {
-        values.insert({value, {}});        
-
-    } else {
-        values.at(value).push_back(i);
-    }
-
-}
-
-
 DataSet::DataSet(string filename) {
-    parseDataset(filename);
+    this->file_name = filename;
 }
 
-bool DataSet::classEq(vector<int> rows) { return false; }
+void DataSet::load() {
+    DataSet::load(this->file_name);
+}
 
-string DataSet::get_class(int row) { return ""; }
+void DataSet::load(string filename) {
+    vector<string>  row;
+    string          line;
+    string          word;
+    ifstream        fd(filename);
 
-string DataSet::plurality_value() { return ""; }
+    if(fd.is_open()) {
 
-string DataSet::plurality_value(vector<int>& row) { return ""; }
+        // Skip headers
+        getline(fd, line);
 
-
-void DataSet::parseDataset(string filename) {
-    ifstream fd(filename);
-    vector<string> row;
-    string line, word;
-    vector<vector<string>> content;
-
-    if(fd.is_open())
-    {
-        while(getline(fd, line))
-        {
+        // Read actual data
+        while(getline(fd, line)) {
             row.clear();
- 
             stringstream str(line);
- 
             while(getline(str, word, ',')) row.push_back(word);
-            content.push_back(row);
+            this->content.push_back(row);
         }
     }
- 
   
-
-    // Close the file
     fd.close();
-    int cols, rows;
-    rows = content.size();  
-    cols = content[0].size();
-
-    // Update attributes property
-    for (int i = 1; i < cols-1; i++) {
-
-        Attribute attr(content[0][i]); 
-      
-        for (int j = 1; j < rows; j++) {
-           attr.insert(j-1, content[j][i]); 
-        }
-
-        attributes.push_back(attr);
-
-    }
-
-    // Update classification and classes property
-    for (int j = 1; j < rows; j++) {
-        updateClassifications(content[j][cols-1]);
-    }
-
-    setEntropy();
-
-    
-
 }
 
-
-void DataSet::updateClassifications(string label) {
-    // update classes map
-    classifications.push_back(label);
-
-    if (classes.count(label) == 0) {
-        classes.insert({label, 1});        
-
-    } else {
-        classes.at(label) += 1;
-    }
-
-}
-
-void DataSet::setEntropy() {
-    float total;
-    float p;
-    float s;
-
-    s = 0.0;
-    total = classifications.size(); 
-
-    for (auto const& x : classes) {
-        float p = x.second/total;
-        s -= p * log2(p);
-    }
-
-    entropy = s;
-
-}
+//void DataSet::setEntropy() {
+//    float total;
+//    float p;
+//    float s;
+//
+//    s = 0.0;
+//    total = classifications.size(); 
+//
+//    for (auto const& x : classes) {
+//        float p = x.second/total;
+//        s -= p * log2(p);
+//    }
+//
+//    entropy = s;
+//}
 
 float DataSet::importance(int attr, vector<int> examples) { return 0.0f; }
 //float DataSet::importance(Attribute attr) {
@@ -144,14 +86,49 @@ float DataSet::importance(int attr, vector<int> examples) { return 0.0f; }
 //    
 //}
 
-void DataSet::debug() {
+bool DataSet::classEq(vector<int> rows) { return false; }
 
-    cout << "Entropy: " << entropy << endl;
-//    for (int i = 0; i < attributes.size(); i++) {
-//        float  gain = importance(attributes[i]);
-//        cout <<  "GAIN(" << attributes[i].label << ") = " << gain << endl; 
-//
-//    }
+string DataSet::get_class(int row) { return ""; }
 
+string DataSet::plurality_value() { 
 
+    // Calculate the value if not already done.
+    if (plurality_val.length() == 0) {
+        // Generate a vector with all rows.
+        vector<int> rows(this->content.size());
+        iota(++rows.begin(), rows.end(), 1);
+
+        this->plurality_val = DataSet::plurality_value(rows);
+    }
+
+    return this->plurality_val;
+}
+
+string DataSet::plurality_value(vector<int>& rows) {
+    map<string,int>  classifications;              
+    string           plurality_value;               
+    int              plurality_value_count = 0;                
+    int              content_class_index   =  this->content[0].size()-1;
+
+    // Populate classifications map with the rows selected from dataset.
+    for (size_t i = 0; i < rows.size(); i++) {
+        string value = content[rows[i]][content_class_index];
+
+        if (classifications.count(value) == 0) {
+            classifications.insert({value, 1});        
+
+        } else {
+            classifications.at(value) += 1;
+        }
+    }
+
+    // Go through classifications to find the most popular classification value.
+    for (auto value : classifications) {
+       if (value.second > plurality_value_count) {
+           plurality_value_count = value.second;
+           plurality_value = value.first;
+       }
+    }
+    
+    return plurality_value;
 }
