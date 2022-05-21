@@ -1,3 +1,6 @@
+# Source of template https://stackoverflow.com/a/27794283
+
+
 #Compiler and Linker
 CC          := g++
 
@@ -49,7 +52,8 @@ cleaner: clean
 -include $(OBJECTS:.$(OBJEXT)=.$(DEPEXT))
 
 #Link
-$(TARGET): $(OBJECTS)
+$(TARGET): $(OBJECTS) 
+	@mkdir -p $(TARGETDIR)
 	$(CC) -o $(TARGETDIR)/$(TARGET) $^ $(LIB)
 
 #Compile
