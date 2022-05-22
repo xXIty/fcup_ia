@@ -24,17 +24,12 @@ class DataSet {
     public:
         DataSet(string filename);
 
-        void load();
-        void load(string filename);
-
-        string get_class(int row);
-
-        string plurality_value();
-        string plurality_value(vector<int> &rows);
-
-        bool classEq(vector<int> rows);
-
-        float importance(int attribute, vector<int> rows);
+        bool    classEq(vector<int> rows);
+        float   importance(int attribute, vector<int> rows);
+        string  get_class(int row);
+        string  plurality_value();
+        string  plurality_value(vector<int> &rows);
+        void    load(string filename);
 
         // void updateClassifications(string label);
         //bool unique_class();

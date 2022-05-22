@@ -14,10 +14,7 @@ typedef unordered_map<string,int> UMSI;
 
 DataSet::DataSet(string filename) {
     this->file_name = filename;
-}
-
-void DataSet::load() {
-    DataSet::load(this->file_name);
+    this->load(this->file_name);
 }
 
 void DataSet::load(string filename) {
@@ -41,15 +38,16 @@ void DataSet::load(string filename) {
     }
     fd.close();
 
-    this->row_size = content[0].size();
-    this->col_size = content.size();
+    this->row_size     =  content[0].size();
+    this->col_size     =  content.size();
+    this->class_index  =  row_size-1;
 }
 
 float DataSet::entropy(int count, unordered_map<string,int> values) {
     float entropy = 0;
     for (auto const& value : values) {
-        int    value_count   =  value.second;     
-        float  value_probab  =  value_count / count;
+        float  value_count   =  float(value.second);     
+        float  value_probab  =  float(value_count) / float(count);
         entropy -= value_probab * log2(value_probab);
     }
     return entropy;
@@ -58,7 +56,7 @@ float DataSet::entropy(int count, unordered_map<string,int> values) {
 float DataSet::importance(int attr_index, vector<int> examples) { 
 
     unordered_map<string,pair<int,UMSI>>  attr_subsets;
-    pair<int,UMSI>                        subset_k;
+    pair<int,UMSI>*                       subset_k;
     pair<int,UMSI>                        classes;
     float                                 examples_entropy;
     float                                 information_gain;
@@ -82,18 +80,18 @@ float DataSet::importance(int attr_index, vector<int> examples) {
         
         // Pick the subset of attribute identified by the row attribute value. 
         if (attr_subsets.count(row_attr_val) == 0)
-            attr_subsets.insert({row_attr_val, pair<int,UMSI>(1,UMSI())});
+            attr_subsets.insert({row_attr_val, pair<int,UMSI>(0,UMSI())});
 
-        subset_k = attr_subsets[row_attr_val];
+        subset_k = &attr_subsets[row_attr_val];
 
         // Increment the number of rows of the subset.
-        ++subset_k.first;
+        subset_k->first += 1;
 
         // Add the class value into the subset.
-        if (subset_k.second.count(row_class_val) == 0) 
-            subset_k.second.insert({row_class_val, 1});        
+        if (subset_k->second.count(row_class_val) == 0) 
+            subset_k->second.insert({row_class_val, 1});        
         else 
-            ++subset_k.second.at(row_class_val);
+            ++subset_k->second.at(row_class_val);
 
     }
 
@@ -102,10 +100,14 @@ float DataSet::importance(int attr_index, vector<int> examples) {
     // Calculate reminder of the attribute
     reminder = 0;
     for (auto s : attr_subsets) {
-        subset_k = s.second;
-        float subset_k_entropy = DataSet::entropy(subset_k.first, subset_k.second);
-        float subset_k_weight  = subset_k.first / classes.first;
+        subset_k = &s.second;
+        float subset_k_entropy = DataSet::entropy(subset_k->first, subset_k->second);
+        float subset_k_weight  = float(subset_k->first) / float(classes.first);
 
+        // cout << s.first << endl;
+        // cout << "\trows:    " << subset_k->first << endl;
+        // cout << "\tEntropy: " << subset_k_entropy << endl;
+        // cout << "\tWeight:  " << subset_k_weight << endl; 
         reminder += subset_k_weight * subset_k_entropy;
     }
 
