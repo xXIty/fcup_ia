@@ -10,6 +10,7 @@ using namespace std;
 
 
 unique_ptr<DecisionTreeNode> id3(vector<int> examples, vector<int> attributes, DataSet &data_set) {
+
     if (examples.empty())  
         return make_unique<DecisionTreeNode>(data_set.plurality_value());
     
@@ -25,8 +26,7 @@ unique_ptr<DecisionTreeNode> id3(vector<int> examples, vector<int> attributes, D
         // for the examples.
         vector<int>::iterator  attr           =  attributes.begin();
         vector<int>::iterator  attr_max       =  attr;
-        int                    importance_max = data_set.importance(*attr, examples);
-        ++attr;
+        int                    importance_max =  IMPORTANCE_MIN;
 
         for (; attr != attributes.end(); attr++) {
 
@@ -37,8 +37,12 @@ unique_ptr<DecisionTreeNode> id3(vector<int> examples, vector<int> attributes, D
                 importance_max  =  importance_tmp;
                 attr_max = attr;
             }
+
         }
+
         attributes.erase(attr_max);
+
+        
     }
     
     return make_unique<DecisionTreeNode>();
