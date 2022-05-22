@@ -4,11 +4,12 @@
 #include <iostream>
 #include <iterator>
 #include <numeric>
-#include <map>
 #include <sstream>
 #include <string>
 
 using namespace std;
+
+typedef unordered_map<string,int> UMSI;
 
 DataSet::DataSet(string filename) {
     this->file_name = filename;
@@ -37,27 +38,88 @@ void DataSet::load(string filename) {
             this->content.push_back(row);
         }
     }
-  
     fd.close();
+
+    this->row_size = content[0].size();
+    this->col_size = content.size();
 }
 
-//void DataSet::setEntropy() {
-//    float total;
-//    float p;
-//    float s;
-//
-//    s = 0.0;
-//    total = classifications.size(); 
-//
-//    for (auto const& x : classes) {
-//        float p = x.second/total;
-//        s -= p * log2(p);
-//    }
-//
-//    entropy = s;
-//}
+float DataSet::entropy(pair<int, unordered_map<string,int>> classes) {
+    float total;
+    float p;
+    float s;
 
-float DataSet::importance(int attr, vector<int> examples) { return 0.0f; }
+    s = 0.0;
+    total = classes.size(); 
+
+    for (auto const& x : classes) {
+        float p = x.second/total;
+        s -= p * log2(p);
+    }
+
+    entropy = s;
+    return s;
+}
+
+float DataSet::importance(int attr_index, vector<int> examples) { 
+
+    unordered_map<string,pair<int,UMSI>>  attr_subsets;
+    pair<int,UMSI>                        subset_k;
+    pair<int,UMSI>                        classes;
+    float                                 examples_entropy;
+    float                                 information_gain;
+    float                                 reminder;
+
+    // Set the total rows class_count will have.
+    classes.first = examples.size();
+
+    // 1. Generate subset that group the class of those rows with same attribute value.
+    for (int row : examples) {
+
+        // Pick the attribute and classification value of the row.
+        string  row_attr_val   =  this->content[row][attr_index];
+        string  row_class_val  =  this->content[row][this->class_index];
+
+        // Count asside all the class values encountered.
+        if (classes.second.count(row_class_val) == 0)
+            classes.second.insert({row_class_val, 1});
+        else
+            ++classes.second.at(row_class_val);
+        
+        // Pick the subset of attribute identified by the row attribute value. 
+        if (attr_subsets.count(row_attr_val) == 0)
+            attr_subsets.insert({row_attr_val, pair<int,UMSI>(1,UMSI())});
+
+        subset_k = attr_subsets[row_attr_val];
+
+        // Increment the number of rows of the subset.
+        ++subset_k.first;
+
+        // Add the class value into the subset.
+        if (subset_k.second.count(row_class_val) == 0) 
+            subset_k.second.insert({row_class_val, 1});        
+        else 
+            ++subset_k.second.at(row_class_val);
+
+    }
+
+    examples_entropy = DataSet::entropy(classes);
+
+    // Calculate reminder of the attribute
+    reminder = 0;
+    for (auto s : attr_subsets) {
+        subset_k = s.second;
+        float subset_k_entropy = DataSet::entropy(subset_k);
+        float subset_k_weight  = subset_k.first / classes.first;
+
+        reminder += subset_k_weight * subset_k_entropy;
+    }
+
+    information_gain = examples_entropy - reminder;
+
+    return information_gain;
+}
+
 //float DataSet::importance(Attribute attr) {
 //    map<string, int> classes;
 //    float gain = entropy;
@@ -90,6 +152,8 @@ bool DataSet::classEq(vector<int> rows) { return false; }
 
 string DataSet::get_class(int row) { return ""; }
 
+
+
 string DataSet::plurality_value() { 
 
     // Calculate the value if not already done.
@@ -104,11 +168,13 @@ string DataSet::plurality_value() {
     return this->plurality_val;
 }
 
+
+
 string DataSet::plurality_value(vector<int>& rows) {
-    map<string,int>  classifications;              
-    string           plurality_value;               
-    int              plurality_value_count = 0;                
-    int              content_class_index   =  this->content[0].size()-1;
+    unordered_map<string,int>  classifications;          
+    string                     plurality_value;          
+    int                        plurality_value_count  =  0;
+    int                        content_class_index    =  this->content[0].size()-1;
 
     // Populate classifications map with the rows selected from dataset.
     for (size_t i = 0; i < rows.size(); i++) {

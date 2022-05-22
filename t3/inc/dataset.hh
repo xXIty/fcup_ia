@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
@@ -11,12 +12,14 @@ using namespace std;
 class DataSet {
 
     string                  file_name;
-    string                  plurality_val;
     vector<vector<string>>  content;
+    int                     row_size;
+    int                     col_size;
+    int                     class_index;
+    string                  plurality_val;
 
     private:
-
-        //void setEntropy();
+        float entropy(pair<int,unordered_map<string,int>>);
 
     public:
         DataSet(string filename);
