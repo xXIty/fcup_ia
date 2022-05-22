@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <cmath>
 #include <numeric>
 #include <sstream>
 #include <string>
@@ -44,21 +45,14 @@ void DataSet::load(string filename) {
     this->col_size = content.size();
 }
 
-float DataSet::entropy(pair<int, unordered_map<string,int>> classes) {
-    float total;
-    float p;
-    float s;
-
-    s = 0.0;
-    total = classes.size(); 
-
-    for (auto const& x : classes) {
-        float p = x.second/total;
-        s -= p * log2(p);
+float DataSet::entropy(int count, unordered_map<string,int> values) {
+    float entropy = 0;
+    for (auto const& value : values) {
+        int    value_count   =  value.second;     
+        float  value_probab  =  value_count / count;
+        entropy -= value_probab * log2(value_probab);
     }
-
-    entropy = s;
-    return s;
+    return entropy;
 }
 
 float DataSet::importance(int attr_index, vector<int> examples) { 
@@ -103,13 +97,13 @@ float DataSet::importance(int attr_index, vector<int> examples) {
 
     }
 
-    examples_entropy = DataSet::entropy(classes);
+    examples_entropy = DataSet::entropy(classes.first, classes.second);
 
     // Calculate reminder of the attribute
     reminder = 0;
     for (auto s : attr_subsets) {
         subset_k = s.second;
-        float subset_k_entropy = DataSet::entropy(subset_k);
+        float subset_k_entropy = DataSet::entropy(subset_k.first, subset_k.second);
         float subset_k_weight  = subset_k.first / classes.first;
 
         reminder += subset_k_weight * subset_k_entropy;

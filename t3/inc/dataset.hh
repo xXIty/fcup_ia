@@ -19,7 +19,7 @@ class DataSet {
     string                  plurality_val;
 
     private:
-        float entropy(pair<int,unordered_map<string,int>>);
+        float entropy(int count, unordered_map<string,int> values);
 
     public:
         DataSet(string filename);
