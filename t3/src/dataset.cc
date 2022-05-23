@@ -57,12 +57,9 @@ void DataSet::load(string filename) {
     this->col_size     =  content.size();
     this->class_index  =  row_size-1;
 
-    // Generate classes map.
-    for (size_t row = 0; row < this->content.size(); row++)
-        this->classes.insert({this->content[row][class_index],0});
-
-    // Generate Attribute maps.
+    // Generate Attribute and classes map.
     for (size_t row = 0; row < this->content.size(); row++) {
+        this->classes.insert({this->content[row][class_index],0});
         for (size_t col = 0; col < this->content[0].size()-1; col++) {
             string attr_val = content[row][col];
             this->attributes[col].insert({attr_val, pair<int,UMSI>(0,this->classes)});
@@ -89,9 +86,11 @@ float DataSet::entropy(int count, unordered_map<string,int>& values) {
 
 
 
-float DataSet::importance(int attr_index, vector<int>& examples) { 
+float DataSet::importance(int                                 attr_index,    
+                          const vector<int>&                  examples,      
+                          unordered_map<string,vector<int>>&  attr_subsets_rows)  {
 
-    unordered_map<string,pair<int,UMSI>>  attr_subsets;
+    unordered_map<string,pair<int,UMSI>>  attr_subsets_class;
     pair<int,UMSI>*                       subset_k;
     pair<int,UMSI>                        classes;
     float                                 examples_entropy;
@@ -99,8 +98,8 @@ float DataSet::importance(int attr_index, vector<int>& examples) {
     float                                 attr_reminder;
 
     // Gather the subsets for the attribute and class
-    classes       =  pair<int,UMSI>(0,this->classes);
-    attr_subsets  =  this->attributes[attr_index];
+    classes             =  pair<int,UMSI>(0,this->classes);
+    attr_subsets_class  =  this->attributes[attr_index];
 
     // Fill each subset with data from input data and pick classifications.
     for (int row : examples) {
@@ -111,13 +110,14 @@ float DataSet::importance(int attr_index, vector<int>& examples) {
         // Count class values of examples.
         ++classes.second.at(row_class_val);
         
-        // Add row to the corresponding subset
-        subset_k = &attr_subsets[row_attr_val];
-        subset_k->first += 1;
-        if (subset_k->second.count(row_class_val) == 0) 
-            subset_k->second.insert({row_class_val, 1});        
-        else 
-            ++subset_k->second.at(row_class_val);
+        // Add row to the  subset
+        attr_subsets_rows[row_attr_val].push_back(row);
+
+        // Add the row class to the subset
+        subset_k = &attr_subsets_class[row_attr_val];
+
+        ++subset_k->first;
+        ++subset_k->second.at(row_class_val);
 
     }
 
@@ -127,7 +127,7 @@ float DataSet::importance(int attr_index, vector<int>& examples) {
     
     // Reminder(attribute)
     attr_reminder = 0;
-    for (auto s : attr_subsets) {
+    for (auto s : attr_subsets_class) {
         subset_k = &s.second;
 
         float subset_k_entropy = DataSet::entropy(subset_k->first, subset_k->second);
