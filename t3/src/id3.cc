@@ -9,43 +9,57 @@
 using namespace std;
 
 
-unique_ptr<DecisionTreeNode> id3(vector<int> examples, vector<int> attributes, DataSet &data_set) {
+unique_ptr<DecisionTreeNode> id3(vector<int>  examples,         
+                                 vector<int>  attributes,       
+                                 vector<int>  examples_parent,  
+                                 DataSet      &data_set)        {
+
+    DecisionTreeNode tree = DecisionTreeNode();
 
     if (examples.empty())  
-        return make_unique<DecisionTreeNode>(data_set.plurality_value());
+        tree.set_classification(data_set.plurality_value(examples_parent));
     
     else if (data_set.classEq(examples)) 
-        return make_unique<DecisionTreeNode>(data_set.get_class(examples[0]));
+        tree.set_classification(data_set.get_class(examples[0]));
     
     else if (attributes.empty()) 
-        return make_unique<DecisionTreeNode>(data_set.plurality_value(examples));
+        tree.set_classification(data_set.plurality_value(examples));
+
 
     else {
 
-        // Find the attr from attributes that maximizes IMPORTANCE function 
-        // for the examples.
-        vector<int>::iterator  attr           =  attributes.begin();
-        vector<int>::iterator  attr_max       =  attr;
-        int                    importance_max =  IMPORTANCE_MIN;
+        vector<int>::iterator              attr                   =  attributes.begin();
+        float                              attr_importance;          
+        unordered_map<string,vector<int>>  attr_subsets_rows      =  {};
+        vector<int>::iterator              attr_max               =  attr;
+        float                              attr_max_importance    =  IMPORTANCE_MIN;
+        unordered_map<string,vector<int>>  attr_max_subsets_rows  =  {};
 
+        // Find attribute with max importance and its subsets of rows.
         for (; attr != attributes.end(); attr++) {
 
             // Calculate IMPORTANCE
-            float importance_tmp = data_set.importance(*attr, examples);
+            attr_importance = data_set.importance(*attr, examples, attr_subsets_rows);
 
-            if (importance_tmp > importance_max) {
-                importance_max  =  importance_tmp;
-                attr_max = attr;
+            if (attr_importance > attr_max_importance) {
+                attr_max               =  attr;
+                attr_max_importance    =  attr_importance;
+                attr_max_subsets_rows  =  attr_subsets_rows;
             }
 
+            attr_subsets_rows.clear();
         }
 
         attributes.erase(attr_max);
 
-        
+        for (string attr_val : data_set.get_attribute_values(*attr_max)) {
+            vector<int> exs = attr_subsets_rows[attr_val];
+            unique_ptr<DecisionTreeNode> subtree = id3(exs, attributes, examples, data_set);
+            tree.add_branch(attr_val, move(subtree));
+        }
     }
     
-    return make_unique<DecisionTreeNode>();
+    return make_unique<DecisionTreeNode>(tree);
 }
 
 //DecisionTreeNode ID3 (DataSet dataset) {

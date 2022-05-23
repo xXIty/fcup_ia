@@ -3,4 +3,7 @@
 
 #include <memory>
 
-unique_ptr<DecisionTreeNode> id3(vector<int> examples, vector<int> attributes, DataSet &data_set);
+unique_ptr<DecisionTreeNode> id3(vector<int>  examples,         
+                                 vector<int>  attributes,       
+                                 vector<int>  examples_parent,  
+                                 DataSet      &data_set);
