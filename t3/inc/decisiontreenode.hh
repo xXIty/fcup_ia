@@ -3,19 +3,25 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
 class DecisionTreeNode {
-    private:
-        vector<DecisionTreeNode> children;
+    int attribute;
+    string classification;
+
+    vector<pair<string,unique_ptr<DecisionTreeNode>>> children;
 
     public:
-        int attribute;
-        string label;
-
         DecisionTreeNode();
+        DecisionTreeNode(int attribute);
         DecisionTreeNode(string label);
+
+        void set_attribute(int attribute);
+        void set_classification(string label);
+
+        void add_branch(string label, unique_ptr<DecisionTreeNode> subtree);
 };
 
 #endif
