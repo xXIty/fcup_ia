@@ -23,7 +23,7 @@ DataSet::DataSet(string filename) {
     this->load(this->file_name);
 }
 
-
+vector<string> DataSet::get_attribute_values(int attribute) { return {};}
 
 void DataSet::load(string filename) {
     vector<string>  row;
