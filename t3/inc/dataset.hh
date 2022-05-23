@@ -21,6 +21,7 @@ class DataSet {
 
     // For importance function
     vector<unordered_map<string,pair<int,UMSI>>>  attributes;
+    vector<vector<string>>                        attribute_values;
     unordered_map<string,int>                     classes;
 
     private:

@@ -11,10 +11,10 @@
 using namespace std;
 
 
+
 // TO DO
 bool DataSet::classEq(vector<int> rows) { return false; }
 string DataSet::get_class(int row) { return ""; }
-
 
 
 
@@ -23,7 +23,9 @@ DataSet::DataSet(string filename) {
     this->load(this->file_name);
 }
 
-vector<string> DataSet::get_attribute_values(int attribute) { return {};}
+vector<string> DataSet::get_attribute_values(int attribute) {
+    return this->attribute_values[attribute];
+}
 
 void DataSet::load(string filename) {
     vector<string>  row;
@@ -64,6 +66,13 @@ void DataSet::load(string filename) {
             string attr_val = content[row][col];
             this->attributes[col].insert({attr_val, pair<int,UMSI>(0,this->classes)});
         }
+    }
+
+    for (auto attribute : attributes) {
+        vector<string> attribute_values;
+        for (auto attribute_val : attribute) 
+            attribute_values.push_back(attribute_val.first);
+        this->attribute_values.push_back(attribute_values);
     }
 }
 
@@ -141,6 +150,8 @@ float DataSet::importance(int                                 attr_index,
 
     return information_gain;
 }
+
+
 
 string DataSet::plurality_value(vector<int>& rows) {
     unordered_map<string,int>  classifications;          
