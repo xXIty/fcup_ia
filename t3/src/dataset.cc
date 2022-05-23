@@ -10,12 +10,20 @@
 
 using namespace std;
 
-typedef unordered_map<string,int> UMSI;
+
+// TO DO
+bool DataSet::classEq(vector<int> rows) { return false; }
+string DataSet::get_class(int row) { return ""; }
+
+
+
 
 DataSet::DataSet(string filename) {
     this->file_name = filename;
     this->load(this->file_name);
 }
+
+
 
 void DataSet::load(string filename) {
     vector<string>  row;
@@ -25,8 +33,14 @@ void DataSet::load(string filename) {
 
     if(fd.is_open()) {
 
-        // Skip headers
+        // Parse headers
         getline(fd, line);
+        row.clear();
+        stringstream str(line);
+
+        // Initialize the Attributes map vector.
+        while(getline(str, word, ','))  
+            this->attributes.push_back(unordered_map<string,pair<int,UMSI>>());
 
         // Read actual data
         while(getline(fd, line)) {
@@ -34,6 +48,7 @@ void DataSet::load(string filename) {
             stringstream str(line);
             while(getline(str, word, ',')) row.push_back(word);
             this->content.push_back(row);
+
         }
     }
     fd.close();
@@ -41,53 +56,64 @@ void DataSet::load(string filename) {
     this->row_size     =  content[0].size();
     this->col_size     =  content.size();
     this->class_index  =  row_size-1;
+
+    // Generate classes map.
+    for (size_t row = 0; row < this->content.size(); row++)
+        this->classes.insert({this->content[row][class_index],0});
+
+    // Generate Attribute maps.
+    for (size_t row = 0; row < this->content.size(); row++) {
+        for (size_t col = 0; col < this->content[0].size()-1; col++) {
+            string attr_val = content[row][col];
+            this->attributes[col].insert({attr_val, pair<int,UMSI>(0,this->classes)});
+        }
+    }
 }
 
-float DataSet::entropy(int count, unordered_map<string,int> values) {
+
+
+float DataSet::entropy(int count, unordered_map<string,int>& values) {
     float entropy = 0;
+
     for (auto const& value : values) {
-        float  value_count   =  float(value.second);     
+        if (value.second == 0)
+            continue;
+
+        float  value_count   =  float(value.second);
         float  value_probab  =  float(value_count) / float(count);
+
         entropy -= value_probab * log2(value_probab);
     }
     return entropy;
 }
 
-float DataSet::importance(int attr_index, vector<int> examples) { 
+
+
+float DataSet::importance(int attr_index, vector<int>& examples) { 
 
     unordered_map<string,pair<int,UMSI>>  attr_subsets;
     pair<int,UMSI>*                       subset_k;
     pair<int,UMSI>                        classes;
     float                                 examples_entropy;
     float                                 information_gain;
-    float                                 reminder;
+    float                                 attr_reminder;
 
-    // Set the total rows class_count will have.
-    classes.first = examples.size();
+    // Gather the subsets for the attribute and class
+    classes       =  pair<int,UMSI>(0,this->classes);
+    attr_subsets  =  this->attributes[attr_index];
 
-    // 1. Generate subset that group the class of those rows with same attribute value.
+    // Fill each subset with data from input data and pick classifications.
     for (int row : examples) {
-
         // Pick the attribute and classification value of the row.
         string  row_attr_val   =  this->content[row][attr_index];
         string  row_class_val  =  this->content[row][this->class_index];
 
-        // Count asside all the class values encountered.
-        if (classes.second.count(row_class_val) == 0)
-            classes.second.insert({row_class_val, 1});
-        else
-            ++classes.second.at(row_class_val);
+        // Count class values of examples.
+        ++classes.second.at(row_class_val);
         
-        // Pick the subset of attribute identified by the row attribute value. 
-        if (attr_subsets.count(row_attr_val) == 0)
-            attr_subsets.insert({row_attr_val, pair<int,UMSI>(0,UMSI())});
-
+        // Add row to the corresponding subset
         subset_k = &attr_subsets[row_attr_val];
-
-        // Increment the number of rows of the subset.
         subset_k->first += 1;
-
-        // Add the class value into the subset.
         if (subset_k->second.count(row_class_val) == 0) 
             subset_k->second.insert({row_class_val, 1});        
         else 
@@ -95,76 +121,26 @@ float DataSet::importance(int attr_index, vector<int> examples) {
 
     }
 
+    // Entropy(examples)
+    classes.first    = examples.size();
     examples_entropy = DataSet::entropy(classes.first, classes.second);
-
-    // Calculate reminder of the attribute
-    reminder = 0;
+    
+    // Reminder(attribute)
+    attr_reminder = 0;
     for (auto s : attr_subsets) {
         subset_k = &s.second;
+
         float subset_k_entropy = DataSet::entropy(subset_k->first, subset_k->second);
         float subset_k_weight  = float(subset_k->first) / float(classes.first);
 
-        // cout << s.first << endl;
-        // cout << "\trows:    " << subset_k->first << endl;
-        // cout << "\tEntropy: " << subset_k_entropy << endl;
-        // cout << "\tWeight:  " << subset_k_weight << endl; 
-        reminder += subset_k_weight * subset_k_entropy;
+        attr_reminder += subset_k_weight * subset_k_entropy;
     }
 
-    information_gain = examples_entropy - reminder;
+    // Information Gain(examples, attr) = Entropy(examples) - Remainder(attr)
+    information_gain = examples_entropy - attr_reminder;
 
     return information_gain;
 }
-
-//float DataSet::importance(Attribute attr) {
-//    map<string, int> classes;
-//    float gain = entropy;
-//    float total = classifications.size();
-//
-//    for (auto const& v : attr.values) {
-//        float totalk = v.second.size();
-//        for (int i = 0; i < totalk; i++) {
-//            string label = classifications[v.second[i]];
-//            if (classes.count(label) == 0) {
-//                classes.insert({label, 1});        
-//
-//            } else {
-//                classes.at(label) += 1;
-//            }
-//        }
-//        float entropyk = 0.0;
-//        for (auto const& v : classes) {
-//            float p = v.second/totalk;
-//            entropyk -= p * log2(p);
-//        }
-//        gain -= (totalk/total) * entropyk;
-//    }
-//
-//    return gain;
-//    
-//}
-
-bool DataSet::classEq(vector<int> rows) { return false; }
-
-string DataSet::get_class(int row) { return ""; }
-
-
-
-string DataSet::plurality_value() { 
-
-    // Calculate the value if not already done.
-    if (plurality_val.length() == 0) {
-        // Generate a vector with all rows.
-        vector<int> rows(this->content.size());
-        iota(++rows.begin(), rows.end(), 1);
-
-        this->plurality_val = DataSet::plurality_value(rows);
-    }
-
-    return this->plurality_val;
-}
-
-
 
 string DataSet::plurality_value(vector<int>& rows) {
     unordered_map<string,int>  classifications;          
