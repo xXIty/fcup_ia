@@ -14,16 +14,16 @@ unique_ptr<DecisionTreeNode> id3(vector<int>  examples,
                                  vector<int>  examples_parent,  
                                  DataSet      &data_set)        {
 
-    DecisionTreeNode tree = DecisionTreeNode();
+    unique_ptr<DecisionTreeNode> tree = make_unique<DecisionTreeNode>();
 
     if (examples.empty())  
-        tree.set_classification(data_set.plurality_value(examples_parent));
+        tree->set_classification(data_set.plurality_value(examples_parent));
     
     else if (data_set.classEq(examples)) 
-        tree.set_classification(data_set.get_class(examples[0]));
+        tree->set_classification(data_set.get_class(examples[0]));
     
     else if (attributes.empty()) 
-        tree.set_classification(data_set.plurality_value(examples));
+        tree->set_classification(data_set.plurality_value(examples));
 
 
     else {
@@ -55,11 +55,11 @@ unique_ptr<DecisionTreeNode> id3(vector<int>  examples,
         for (string attr_val : data_set.get_attribute_values(*attr_max)) {
             vector<int> exs = attr_subsets_rows[attr_val];
             unique_ptr<DecisionTreeNode> subtree = id3(exs, attributes, examples, data_set);
-            tree.add_branch(attr_val, move(subtree));
+            tree->add_branch(attr_val, move(subtree));
         }
     }
     
-    return make_unique<DecisionTreeNode>(tree);
+    return tree;
 }
 
 //DecisionTreeNode ID3 (DataSet dataset) {
