@@ -1,9 +1,11 @@
 #include "dataset.hh"
 #include "decisiontreenode.hh"
 
+#include <iostream>
+
 using namespace std;
 
-DecisionTreeNode::DecisionTreeNode() {}
+DecisionTreeNode::DecisionTreeNode() { cout << "uau" << endl;}
 
 DecisionTreeNode::DecisionTreeNode(int attribute) {
     this->attribute= attribute;
@@ -20,6 +22,5 @@ void DecisionTreeNode::set_classification(string classification) {
 }
 
 void DecisionTreeNode::add_branch(string label, unique_ptr<DecisionTreeNode> subtree) {
-    auto branch = make_pair(label, move(subtree));
-    this->children.push_back(branch);
+    this->children.push_back(make_pair(label, move(subtree)));
 }
