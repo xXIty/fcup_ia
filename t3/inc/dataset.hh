@@ -19,9 +19,10 @@ class DataSet {
     int                                           col_size;
     int                                           class_index;
 
-    // For importance function
     vector<unordered_map<string,pair<int,UMSI>>>  attributes;
+
     vector<vector<string>>                        attribute_values;
+    vector<string>                                attribute_labels;
     unordered_map<string,int>                     classes;
 
     private:
@@ -30,17 +31,17 @@ class DataSet {
     public:
         DataSet(string filename);
 
-        bool            classEq(vector<int> rows);
+        bool            classEq(vector<int> &rows);
+        int             get_col_size();
+        int             get_row_size();
         string          get_class(int row);
         vector<string>  get_attribute_values(int attribute);
+        vector<string>  get_attribute_labels();
         string          plurality_value(vector<int> &rows);
         void            load(string filename);
         float           importance(int                                 attribute,
                                    const vector<int>&                  rows,
                                    unordered_map<string,vector<int>>&  attr_subsets_rows);
-
-        // void updateClassifications(string label);
-        //bool unique_class();
 };
 
 #endif

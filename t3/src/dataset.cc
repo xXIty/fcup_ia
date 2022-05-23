@@ -4,7 +4,6 @@
 #include <iostream>
 #include <iterator>
 #include <cmath>
-#include <numeric>
 #include <sstream>
 #include <string>
 
@@ -12,9 +11,25 @@ using namespace std;
 
 
 
-// TO DO
-bool DataSet::classEq(vector<int> rows) { return false; }
-string DataSet::get_class(int row) { return ""; }
+bool DataSet::classEq(vector<int> &rows) {
+    bool    equal           =  true;
+    string  classification  =  this->content[rows[0]][class_index];
+
+    for (size_t i = 1; i < rows.size(); i++) {
+        if (classification != this->content[rows[i]][class_index]) {
+            equal = false;
+            break;
+        }
+    }
+
+    return equal;
+}
+
+
+
+string DataSet::get_class(int row) {
+    return this->content[row][this->class_index];
+}
 
 
 
@@ -26,6 +41,12 @@ DataSet::DataSet(string filename) {
 vector<string> DataSet::get_attribute_values(int attribute) {
     return this->attribute_values[attribute];
 }
+
+int DataSet::get_col_size() { return this->col_size; }
+
+int DataSet::get_row_size() { return this->row_size; }
+
+vector<string> DataSet::get_attribute_labels() { return this->attribute_labels; }
 
 void DataSet::load(string filename) {
     vector<string>  row;
@@ -41,13 +62,22 @@ void DataSet::load(string filename) {
         stringstream str(line);
 
         // Initialize the Attributes map vector.
-        while(getline(str, word, ','))  
-            this->attributes.push_back(unordered_map<string,pair<int,UMSI>>());
+        getline(str, word, ','); // Skip ID
+        while(getline(str, word, ','))  {
+            this->attribute_labels.push_back(word);
+        }
+
+        this->attribute_labels.pop_back(); // Remove class
+        this->attributes = vector<unordered_map<string,pair<int,UMSI>>>(attribute_labels.size());
 
         // Read actual data
         while(getline(fd, line)) {
             row.clear();
             stringstream str(line);
+
+            // Skip ID
+            getline(str,word,',');
+
             while(getline(str, word, ',')) row.push_back(word);
             this->content.push_back(row);
 
@@ -59,19 +89,25 @@ void DataSet::load(string filename) {
     this->col_size     =  content.size();
     this->class_index  =  row_size-1;
 
-    // Generate Attribute and classes map.
-    for (size_t row = 0; row < this->content.size(); row++) {
+    // Generate Class map.
+    for (size_t row = 0; row < this->content.size(); row++)
         this->classes.insert({this->content[row][class_index],0});
+
+    // Generate Attribute map.
+    for (size_t row = 0; row < this->content.size(); row++) {
         for (size_t col = 0; col < this->content[0].size()-1; col++) {
             string attr_val = content[row][col];
             this->attributes[col].insert({attr_val, pair<int,UMSI>(0,this->classes)});
         }
     }
 
+    // Generate list of values for each attr.
     for (auto attribute : attributes) {
         vector<string> attribute_values;
-        for (auto attribute_val : attribute) 
+        for (auto attribute_val : attribute) {
             attribute_values.push_back(attribute_val.first);
+        }
+
         this->attribute_values.push_back(attribute_values);
     }
 }
@@ -126,7 +162,9 @@ float DataSet::importance(int                                 attr_index,
         subset_k = &attr_subsets_class[row_attr_val];
 
         ++subset_k->first;
+
         ++subset_k->second.at(row_class_val);
+
 
     }
 
@@ -147,6 +185,7 @@ float DataSet::importance(int                                 attr_index,
 
     // Information Gain(examples, attr) = Entropy(examples) - Remainder(attr)
     information_gain = examples_entropy - attr_reminder;
+
 
     return information_gain;
 }

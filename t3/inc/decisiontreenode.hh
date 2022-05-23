@@ -10,6 +10,7 @@ using namespace std;
 class DecisionTreeNode {
     int attribute;
     string classification;
+    int count;
 
     vector<pair<string,unique_ptr<DecisionTreeNode>>> children;
 
@@ -19,9 +20,12 @@ class DecisionTreeNode {
         DecisionTreeNode(string label);
 
         void set_attribute(int attribute);
-        void set_classification(string label);
+        void set_classification(string label, int count);
+
+        bool is_leaf();
 
         void add_branch(string label, unique_ptr<DecisionTreeNode> subtree);
+        void print(vector<string>& attribute_labels, int depth);
 };
 
 #endif
