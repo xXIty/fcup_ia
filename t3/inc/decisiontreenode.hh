@@ -8,11 +8,11 @@
 using namespace std;
 
 class DecisionTreeNode {
-    int attribute;
-    string classification;
-    int count;
 
-    vector<pair<string,unique_ptr<DecisionTreeNode>>> children;
+    int                                                attribute;
+    int                                                count;
+    string                                             classification;
+    vector<pair<string,unique_ptr<DecisionTreeNode>>>  children;
 
     public:
         DecisionTreeNode();

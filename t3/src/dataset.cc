@@ -6,23 +6,17 @@
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <numeric>
 
 using namespace std;
 
 
 
-bool DataSet::classEq(vector<int> &rows) {
-    bool    equal           =  true;
-    string  classification  =  this->content[rows[0]][class_index];
 
-    for (size_t i = 1; i < rows.size(); i++) {
-        if (classification != this->content[rows[i]][class_index]) {
-            equal = false;
-            break;
-        }
-    }
 
-    return equal;
+DataSet::DataSet(string filename) {
+    this->file_name = filename;
+    this->load(this->file_name);
 }
 
 
@@ -33,20 +27,33 @@ string DataSet::get_class(int row) {
 
 
 
-DataSet::DataSet(string filename) {
-    this->file_name = filename;
-    this->load(this->file_name);
-}
-
 vector<string> DataSet::get_attribute_values(int attribute) {
     return this->attribute_values[attribute];
 }
 
-int DataSet::get_col_size() { return this->col_size; }
 
-int DataSet::get_row_size() { return this->row_size; }
 
-vector<string> DataSet::get_attribute_labels() { return this->attribute_labels; }
+vector<int> DataSet::get_attribute_identifiers() {
+    vector<int>  attribute_identifiers(this->content[0].size()-1);
+    iota(attribute_identifiers.begin(),  attribute_identifiers.end(),  0);
+    return attribute_identifiers;
+}
+
+
+
+vector<int> DataSet::get_row_identifiers() {
+    vector<int> row_identifiers(this->content.size());
+    iota(row_identifiers.begin(), row_identifiers.end(), 0);
+    return row_identifiers;
+}
+
+
+
+vector<string> DataSet::get_attribute_headers() {
+    return this->attribute_headers;
+}
+
+
 
 void DataSet::load(string filename) {
     vector<string>  row;
@@ -56,19 +63,19 @@ void DataSet::load(string filename) {
 
     if(fd.is_open()) {
 
-        // Parse headers
+        // Parse attribute_headers
         getline(fd, line);
         row.clear();
         stringstream str(line);
 
-        // Initialize the Attributes map vector.
+        // Headers
         getline(str, word, ','); // Skip ID
         while(getline(str, word, ','))  {
-            this->attribute_labels.push_back(word);
+            this->attribute_headers.push_back(word);
         }
 
-        this->attribute_labels.pop_back(); // Remove class
-        this->attributes = vector<unordered_map<string,pair<int,UMSI>>>(attribute_labels.size());
+        this->attribute_headers.pop_back(); // Remove class
+        this->attributes = vector<unordered_map<string,pair<int,UMSI>>>(this->attribute_headers.size());
 
         // Read actual data
         while(getline(fd, line)) {
@@ -85,9 +92,7 @@ void DataSet::load(string filename) {
     }
     fd.close();
 
-    this->row_size     =  content[0].size();
-    this->col_size     =  content.size();
-    this->class_index  =  row_size-1;
+    this->class_index  =  content[0].size()-1;
 
     // Generate Class map.
     for (size_t row = 0; row < this->content.size(); row++)
@@ -114,6 +119,22 @@ void DataSet::load(string filename) {
 
 
 
+bool DataSet::classEq(vector<int> &rows) {
+    bool    equal           =  true;
+    string  classification  =  this->content[rows[0]][class_index];
+
+    for (size_t i = 1; i < rows.size(); i++) {
+        if (classification != this->content[rows[i]][class_index]) {
+            equal = false;
+            break;
+        }
+    }
+
+    return equal;
+}
+
+
+
 float DataSet::entropy(int count, unordered_map<string,int>& values) {
     float entropy = 0;
 
@@ -126,6 +147,7 @@ float DataSet::entropy(int count, unordered_map<string,int>& values) {
 
         entropy -= value_probab * log2(value_probab);
     }
+
     return entropy;
 }
 
@@ -164,8 +186,6 @@ float DataSet::importance(int                                 attr_index,
         ++subset_k->first;
 
         ++subset_k->second.at(row_class_val);
-
-
     }
 
     // Entropy(examples)
@@ -186,14 +206,13 @@ float DataSet::importance(int                                 attr_index,
     // Information Gain(examples, attr) = Entropy(examples) - Remainder(attr)
     information_gain = examples_entropy - attr_reminder;
 
-
     return information_gain;
 }
 
 
 
-string DataSet::plurality_value(vector<int>& rows) {
-    unordered_map<string,int>  classifications;          
+pair<string,int> DataSet::plurality_value(vector<int>& rows) {
+    UMSI                       classifications = this->classes;          
     string                     plurality_value;          
     int                        plurality_value_count  =  0;
     int                        content_class_index    =  this->content[0].size()-1;
@@ -202,12 +221,7 @@ string DataSet::plurality_value(vector<int>& rows) {
     for (size_t i = 0; i < rows.size(); i++) {
         string value = content[rows[i]][content_class_index];
 
-        if (classifications.count(value) == 0) {
-            classifications.insert({value, 1});        
-
-        } else {
-            classifications.at(value) += 1;
-        }
+        classifications.at(value) += 1;
     }
 
     // Go through classifications to find the most popular classification value.
@@ -218,5 +232,5 @@ string DataSet::plurality_value(vector<int>& rows) {
        }
     }
     
-    return plurality_value;
+    return make_pair(plurality_value, plurality_value_count);
 }

@@ -15,25 +15,21 @@ unique_ptr<DecisionTreeNode> id3(vector<int>  examples,
                                  vector<int>  examples_parent,  
                                  DataSet      &data_set)        {
 
-    cout << "Creating new node" << endl;
-
     unique_ptr<DecisionTreeNode> tree = make_unique<DecisionTreeNode>();
 
     if (examples.empty()) {
-        cout << "No examples to classify" << endl;
-        tree->set_classification(data_set.plurality_value(examples_parent), 0);
+        pair<string,int> plurality_value = data_set.plurality_value(examples_parent); 
+        tree->set_classification(plurality_value.first, plurality_value.second);
     }
     
-    else if (data_set.classEq(examples)) { 
-        cout << "All examples have the same class" << endl;
+    else if (data_set.classEq(examples)) {
         tree->set_classification(data_set.get_class(examples[0]), examples.size());
     }
     
     else if (attributes.empty()) {
-        cout << "No more attributes to classify" << endl;
-        tree->set_classification(data_set.plurality_value(examples), examples.size());
+        pair<string,int> plurality_value = data_set.plurality_value(examples); 
+        tree->set_classification(plurality_value.first, plurality_value.second);
     }
-
 
     else {
 
