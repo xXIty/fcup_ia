@@ -53,3 +53,21 @@ void DecisionTreeNode::print(vector<string>& attribute_labels, int depth) {
         }
     }
 }
+
+
+
+string DecisionTreeNode::decide(vector<string>& row) {
+
+    if (this->is_leaf()) {
+        return this->classification;
+    }
+    else {
+        string label = row[this->attribute];
+        for (size_t i = 0; i < children.size(); i++) {
+            if (this->children[i].first == label){
+                return children[i].second->decide(row);
+            }
+        }
+        return "Unknown attr value detected.";
+    }
+}
