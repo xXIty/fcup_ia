@@ -43,15 +43,21 @@ unique_ptr<DecisionTreeNode> id3(vector<int>  examples,
 
 
         // Find attribute with max importance and its subsets of rows.
+        float split_point;
         for (; attr != attributes.end(); attr++) {
 
             // Calculate IMPORTANCE
-            attr_importance = data_set.importance(*attr, examples, attr_subsets_rows);
+            float sp;
+            if (data_set.is_attr_continuous(*attr)) 
+                attr_importance = data_set.importance_continuous(*attr, examples, sp, attr_subsets_rows);
+            else 
+                attr_importance = data_set.importance_discrete(*attr, examples, attr_subsets_rows);
 
             if (attr_importance > attr_max_importance) {
                 attr_max               =  attr;
                 attr_max_importance    =  attr_importance;
                 attr_max_subsets_rows  =  attr_subsets_rows;
+                split_point            =  sp;
             }
 
             attr_subsets_rows.clear();

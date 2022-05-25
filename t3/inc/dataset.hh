@@ -17,6 +17,7 @@ class DataSet {
     vector<vector<string>>                        content;
 
     vector<unordered_map<string,pair<int,UMSI>>>  attributes;
+    vector<bool>                                  attribute_continous;
     vector<vector<string>>                        attribute_values;
     vector<string>                                attribute_headers;
 
@@ -25,6 +26,7 @@ class DataSet {
 
     private:
         float entropy(int count, unordered_map<string,int>& values);
+        bool              is_continous(string value);
 
     public:
 
@@ -36,9 +38,14 @@ class DataSet {
         vector<string>    get_attribute_headers();      
         vector<string>    get_attribute_values(int attribute);
         bool              classEq(vector<int> &rows);
+        bool              is_attr_continuous(int attr);
         pair<string,int>  plurality_value(vector<int> &rows);
         void              load(string filename);
-        float             importance(int                                 attribute,
+        float             importance_continuous(int                      attribute,
+                                     const vector<int>&                  rows,
+                                     float&                              split_point,
+                                     unordered_map<string,vector<int>>&  attr_subsets_rows);
+        float             importance_discrete(int                        attribute,
                                      const vector<int>&                  rows,
                                      unordered_map<string,vector<int>>&  attr_subsets_rows);
 };
