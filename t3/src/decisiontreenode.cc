@@ -34,6 +34,10 @@ bool DecisionTreeNode::is_leaf() {
 
 void DecisionTreeNode::print(vector<string>& attribute_labels, int depth) {
 
+    if (this->is_leaf()) {
+        cout << this->classification << " (" << this->count << endl;
+    }
+
     cout << string(4*depth, ' ') << "<" << attribute_labels[this->attribute] << ">" << endl;
 
     ++depth;
@@ -45,7 +49,7 @@ void DecisionTreeNode::print(vector<string>& attribute_labels, int depth) {
             cout << string(4*depth, ' ') 
                  << value << ": " 
                  << classification 
-                 << "(" << count << ")" << endl; 
+                 << " (" << count << ")" << endl; 
         }
         else { 
            cout << string(4*depth,' ') << child.first << ":" << endl;
