@@ -64,6 +64,8 @@ unique_ptr<DecisionTreeNode> id3(vector<int>  examples,
         }
 
         attr_choosed = *attr_max;
+        if (data_set.is_attr_continuous(attr_choosed) ) 
+            tree->set_splitting_point(split_point);
         tree->set_attribute(attr_choosed);
         attributes.erase(attr_max);
 

@@ -184,7 +184,7 @@ float DataSet::entropy(int count, unordered_map<string,int>& values) {
 }
 
 
-float DataSet::importance_continuous(int                           attr_index,    
+float DataSet::importance_continuous(int                      attr_index,    
                           const vector<int>&                  examples,      
                           float&                              split_point,
                           unordered_map<string,vector<int>>&  attr_subsets_rows)  {
@@ -207,7 +207,7 @@ float DataSet::importance_continuous(int                           attr_index,
         class_val = this->content[v.second][this->class_index];
         
         // Class and value change -> new splitting point
-        if (class_val != last_class_val && value != v.first) {
+        if (class_val != last_class_val/* && value != v.first*/) {
             float sp = (v.first + value) / 2.0;
             split_points.push_back(sp);
         }
@@ -217,11 +217,12 @@ float DataSet::importance_continuous(int                           attr_index,
     // Compute importance for each splitting point
     vector<unordered_map<string,pair<int,UMSI>>>  attr_subsets_class(split_points.size());
     vector<pair<int,UMSI>*>                       subset_k(split_points.size());
-    vector<pair<int,UMSI>>                classes(split_points.size());
-    float                                 examples_entropy;
-    float                                 information_gain;
-    float                                 attr_reminder;
-    vector<unordered_map<string,vector<int>>> attr_subsets_row_sp(split_points.size());
+    vector<pair<int,UMSI>>                        classes(split_points.size());
+    vector<unordered_map<string,vector<int>>>     attr_subsets_row_sp(split_points.size());
+
+    float                                         examples_entropy;
+    float                                         information_gain;
+    float                                         attr_reminder;
 
     // Gather the subsets for the attribute and class
     for (int i = 0; i < split_points.size(); i++) {
@@ -233,11 +234,10 @@ float DataSet::importance_continuous(int                           attr_index,
     for (int row : examples) {
         float  row_attr_val   =  stof(this->content[row][attr_index]);
         string  row_class_val  =  this->content[row][this->class_index];
+
         for (int i = 0; i < split_points.size(); i++) {
             // Pick the attribute and classification value of the row.
-            string attr_label;
-            if (row_attr_val >= split_points[i]) attr_label = ">=";
-            else attr_label = "<";
+            string attr_label = ( row_attr_val >= split_points[i])? ">=" : "<";
 
             // Count class values of examples.
             ++classes[i].second.at(row_class_val);
@@ -255,7 +255,9 @@ float DataSet::importance_continuous(int                           attr_index,
     }
 
     float max_information_gain = -1;
+
     for ( int i = 0; i < split_points.size(); i++) {
+
         // Entropy(examples)
         classes[i].first    = examples.size();
         examples_entropy = DataSet::entropy(classes[i].first, classes[i].second);
@@ -277,7 +279,7 @@ float DataSet::importance_continuous(int                           attr_index,
         if (information_gain > max_information_gain) {
             max_information_gain = information_gain;
             attr_subsets_rows = attr_subsets_row_sp[i];
-            split_point = split_points[i];
+            split_point = move(split_points[i]);
         }
     }
 

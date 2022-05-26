@@ -69,7 +69,6 @@ int main(int argc, char* argv[]) {
         typedef vector<string>         VS;
         typedef vector<vector<string>> VVS;
 
-        cout << "Test file parsed" << endl;
 
         string    file_test       =  op_parsed["test_file"].as<std::string>();
         VVS       rows;
