@@ -19,7 +19,7 @@ unique_ptr<DecisionTreeNode> id3(vector<int>  examples,
 
     if (examples.empty()) {
         pair<string,int> plurality_value = data_set.plurality_value(examples_parent); 
-        tree->set_classification(plurality_value.first, plurality_value.second);
+        tree->set_classification(plurality_value.first, 0);
     }
     
     else if (data_set.classEq(examples)) {
