@@ -225,7 +225,7 @@ float DataSet::importance_continuous(int                      attr_index,
     float                                         attr_reminder;
 
     // Gather the subsets for the attribute and class
-    for (int i = 0; i < split_points.size(); i++) {
+    for (size_t i = 0; i < split_points.size(); i++) {
         classes[i]             =  pair<int,UMSI>(0,this->classes);
         attr_subsets_class[i]  =  this->attributes[attr_index];
     }
@@ -235,7 +235,7 @@ float DataSet::importance_continuous(int                      attr_index,
         float  row_attr_val   =  stof(this->content[row][attr_index]);
         string  row_class_val  =  this->content[row][this->class_index];
 
-        for (int i = 0; i < split_points.size(); i++) {
+        for (size_t i = 0; i < split_points.size(); i++) {
             // Pick the attribute and classification value of the row.
             string attr_label = ( row_attr_val >= split_points[i])? ">=" : "<";
 
@@ -256,7 +256,7 @@ float DataSet::importance_continuous(int                      attr_index,
 
     float max_information_gain = -1;
 
-    for ( int i = 0; i < split_points.size(); i++) {
+    for (size_t i = 0; i < split_points.size(); i++) {
 
         // Entropy(examples)
         classes[i].first    = examples.size();
