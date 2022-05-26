@@ -1,0 +1,10 @@
+<Weather>
+    rainy:
+        <Windy>
+            TRUE: no (2)
+            FALSE: yes (3)
+    overcast: yes (4)
+    sunny:
+        <Humidity>
+            <77.500000: yes (2)
+            >=77.500000: no (3)

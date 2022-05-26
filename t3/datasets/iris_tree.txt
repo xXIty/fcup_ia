@@ -1,0 +1,18 @@
+<petallength>
+    <2.450000: Iris-setosa (50)
+    >=2.450000:
+        <petalwidth>
+            <1.750000:
+                <sepallength>
+                    <7.100000:
+                        <sepalwidth>
+                            <2.850000: Iris-versicolor (27)
+                            >=2.850000: Iris-versicolor (22)
+                    >=7.100000: Iris-virginica (1)
+            >=1.750000:
+                <sepalwidth>
+                    <3.150000: Iris-virginica (32)
+                    >=3.150000:
+                        <sepallength>
+                            <6.050000: Iris-versicolor (1)
+                            >=6.050000: Iris-virginica (13)
