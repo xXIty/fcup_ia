@@ -1,3 +1,4 @@
+#include "dataset.hpp"
 #include "model.hpp"
 
 #include <boost/program_options.hpp>
@@ -10,7 +11,7 @@ namespace fs = std::filesystem;
 
 int main(int argc, const char **argv) {
 
-    fs::path       train_file;
+    fs::path       train_set_file;
     std::vector<int>  hidden_layers;
 
     // Declare the supported options.
@@ -25,7 +26,7 @@ int main(int argc, const char **argv) {
          "Add a hidden layer with N number of neurons")
 
         ("train,t",
-         po::value< fs::path >(&train_file)->value_name("path"),
+         po::value< fs::path >(&train_set_file)->value_name("path"),
          "Train a new model with the data set provided. The data set must be in .csv format.")
     ;
 
@@ -40,18 +41,26 @@ int main(int argc, const char **argv) {
     }
 
     // Train a new model.
-    if (vm.count("train_file")) {
+    if (vm.count("train")) {
+
         std::cout << "[+] Pre processing the training set." << std::endl;
 
         // Check for needed information.
-        if (!fs::exists(train_file)) {
-            std::string error_msg = "Error: Train file does not exist.";
+        if (!fs::exists(train_set_file)) {
+            std::string error_msg = "\t[!] Error: File "
+                                    + std::string(train_set_file)
+                                    + " does not exist.";
             std::cout << error_msg << std::endl;
             return EXIT_FAILURE;
         } 
 
+        DataSet train_set(train_set_file);
+        train_set.print_info();
+
+        std::cout << "[+] Setting up model" << std::endl;
+
         if (hidden_layers.empty()) {
-            std::string error_msg = "Error: No hidden layers where specified. "
+            std::string error_msg = "\t[!] Error: No hidden layers where specified. "
                                     "Please, enter at least one.";
             std::cout << error_msg << std::endl;
             return EXIT_FAILURE;

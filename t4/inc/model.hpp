@@ -1,7 +1,8 @@
+#ifndef MODEL
+#define MODEL
+
 #include "layer.hpp"
 
-#include <iostream>
-#include <string>
 #include <vector>
 
 typedef std::vector<float> VF;
@@ -23,3 +24,5 @@ class Model {
         void   test(std::string testFile);
 
 };
+
+#endif
