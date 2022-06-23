@@ -23,6 +23,6 @@ VF Feature::raw_to_model(std::string value) const {
     return VF (1, std::stof(value));
 }
 
-std::string Feature::model_to_raw(VF value) const {
+std::string Feature::model_to_raw(VF& value) const {
     return std::to_string(value[0]);
 }

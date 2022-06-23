@@ -8,7 +8,6 @@
 #include <string>
 #include <filesystem>
 
-
 namespace fs = std::filesystem;
 
 class DataSet {

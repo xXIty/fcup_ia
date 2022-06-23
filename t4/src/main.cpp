@@ -11,8 +11,8 @@ namespace fs = std::filesystem;
 
 int main(int argc, const char **argv) {
 
-    fs::path       train_set_file;
-    std::vector<int>  hidden_layers;
+    fs::path                  train_set_file;
+    std::vector<std::size_t>  hidden_layers;
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
@@ -22,7 +22,7 @@ int main(int argc, const char **argv) {
          "Produce help message")
 
         ("hidden,H",
-         po::value< std::vector<int> >(&hidden_layers)->value_name("N"),
+         po::value< std::vector<std::size_t> >(&hidden_layers)->value_name("N"),
          "Add a hidden layer with N number of neurons")
 
         ("train,t",
@@ -42,6 +42,10 @@ int main(int argc, const char **argv) {
 
     // Train a new model.
     if (vm.count("train")) {
+        std::size_t  model_input_size;       
+        std::size_t  model_output_size;      
+        std::string  loss_function        =  "squared-loss";
+        std::string  activation_function  =  "sigmond";
 
         std::cout << "[+] Pre processing the training set." << std::endl;
 
@@ -65,5 +69,14 @@ int main(int argc, const char **argv) {
             std::cout << error_msg << std::endl;
             return EXIT_FAILURE;
         }
+
+        model_input_size   = train_set.get_input_size();
+        model_output_size  = train_set.get_output_size();
+
+        Model model(loss_function,
+                    activation_function,
+                    hidden_layers,
+                    model_input_size,
+                    model_output_size);
     }
 }
