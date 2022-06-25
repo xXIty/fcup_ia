@@ -1,6 +1,8 @@
-#include "feature.hpp"
+#include "Feature.hpp"
 
 typedef  std::vector<float> VF;
+
+Feature::Feature() {}
 
 Feature::Feature(std::string name) {
     this->name      = name;

@@ -1,9 +1,10 @@
-#include "dataset.hpp"
-#include "model.hpp"
+#include "DataSet.hpp"
+#include "Model.hpp"
 
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <filesystem>
+#include <utility>
 
 
 namespace po = boost::program_options;
@@ -27,7 +28,8 @@ int main(int argc, const char **argv) {
 
         ("train,t",
          po::value< fs::path >(&train_set_file)->value_name("path"),
-         "Train a new model with the data set provided. The data set must be in .csv format.")
+         "Train a new model with the data set provided. The data set"
+         " must be in .csv format.")
     ;
 
     po::variables_map vm;
@@ -78,5 +80,15 @@ int main(int argc, const char **argv) {
                     hidden_layers,
                     model_input_size,
                     model_output_size);
+        std::cout << "[+] Model setted up successfully" << std::endl;
+
+        std::cout << "[+] Starting training..." << std::endl;
+
+        for (size_t row_id = 0; row_id < train_set.size(); ++row_id) {
+            std::pair<VF,VF> training_example = train_set.get_in_out(row_id);
+            model.train(training_example.first, training_example.second);
+        }
+        
+        return EXIT_SUCCESS;
     }
 }

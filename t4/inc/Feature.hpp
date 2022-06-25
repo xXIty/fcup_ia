@@ -1,3 +1,6 @@
+#ifndef FEATURE
+#define FEATURE
+
 #include <vector>
 #include <string>
 
@@ -8,6 +11,7 @@ class Feature {
     std::string type_name;
 
     public:
+        Feature();
         Feature(std::string name);
 
         std::string  get_name() const;
@@ -16,3 +20,6 @@ class Feature {
         VF           raw_to_model(std::string value) const;  
         std::string  model_to_raw(VF& feature) const;
 };
+
+
+#endif

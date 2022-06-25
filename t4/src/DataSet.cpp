@@ -1,4 +1,4 @@
-#include "dataset.hpp"
+#include "DataSet.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -12,6 +12,10 @@ typedef  std::vector<std::vector<std::string>>  VVS;
 DataSet::DataSet(fs::path file_path) {
     this->file_path = file_path;
     this->csv_process();
+}
+
+size_t DataSet::size() {
+    return this->data_set_raw.size();
 }
 
 
@@ -61,6 +65,25 @@ size_t DataSet::get_input_size() {
 
 size_t DataSet::get_output_size() {
     return features.end()->size();
+}
+
+std::pair<VF,VF> DataSet::get_in_out(size_t row_id) {
+    size_t i;
+    VF in;
+    VF out;
+    Feature feature;
+    
+    // In
+    for (i = 0; i < this->get_input_size()-1; ++i) {
+        feature = this->features[i];
+        VF model_repr = feature.raw_to_model(this->data_set_raw[row_id][i]);
+        in.insert(in.end(), model_repr.begin(), model_repr.end());
+    }
+    // Out
+    feature = this->features[i];
+    out = feature.raw_to_model(this->data_set_raw[row_id][i]);
+
+    return std::pair<VF,VF>(in, out);
 }
 
 void DataSet::print_info() {

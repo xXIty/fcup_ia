@@ -1,7 +1,7 @@
 #ifndef DATA_SET
 #define DATA_SET
 
-#include "feature.hpp"
+#include "Feature.hpp"
 
 #include <utility>
 #include <vector>
