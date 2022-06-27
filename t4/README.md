@@ -6,8 +6,11 @@
 - Operating System used for development and testing:
 
 ```
-Linux 5.16.12-arch1-1 #1 SMP PREEMPT Wed, 02 Mar 2022 12:22:51 +0000 x86_64 GNU/Linux
+Linux 5.18.1-arch1-1 #1 SMP PREEMPT_DYNAMIC Mon, 30 May 2022 17:53:11 +0000 x86_64 GNU/Linux
 ```
+# Dependencies
+In order to compile the program, the system needs to have the c++ boost libraries. For Debian based distributions this might work:
+`sudo apt install libboost-all-dev`
 
 # INSTALLATION
 From the root of the project execute the following command.
@@ -36,9 +39,6 @@ Allowed options:
                                         absolute error (difference) is achieved
   -v [ --verbose ]                      Print loss for each epoch
 ```
-
-# Usefull commands
-
 
 # EXAMPLES
 
