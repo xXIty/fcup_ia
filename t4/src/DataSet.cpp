@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <fstream>
-#include<iomanip>
+#include <iomanip>
 
 typedef  std::vector<float>                     VF;
 typedef  std::vector<std::string>               VS;
@@ -68,20 +68,20 @@ size_t DataSet::get_output_size() {
 }
 
 std::pair<VF,VF> DataSet::get_in_out(size_t row_id) {
-    size_t i;
     VF in;
     VF out;
     Feature feature;
+    size_t row_size = this->data_set_raw[row_id].size();
     
     // In
-    for (i = 0; i < this->get_input_size()-1; ++i) {
+    for (size_t i = 0; i < row_size-1; ++i) {
         feature = this->features[i];
         VF model_repr = feature.raw_to_model(this->data_set_raw[row_id][i]);
         in.insert(in.end(), model_repr.begin(), model_repr.end());
     }
     // Out
-    feature = this->features[i];
-    out = feature.raw_to_model(this->data_set_raw[row_id][i]);
+    feature = this->features[row_size-1];
+    out = feature.raw_to_model(this->data_set_raw[row_id][row_size-1]);
 
     return std::pair<VF,VF>(in, out);
 }

@@ -19,7 +19,6 @@ OBJEXT      := o
 
 #Flags, Libraries and Includes
 CFLAGS      := -Wall -O3 -g -std=c++17
-#CFLAGS      := -Wall -g
 LIB         := -lm -lboost_program_options
 INC         := -I$(INCDIR) -I/usr/local/include
 INCDEP      := -I$(INCDIR)

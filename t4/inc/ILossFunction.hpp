@@ -8,18 +8,24 @@ class ILossFunction {
         virtual ~ILossFunction() = default;
         virtual std::vector<float> loss(std::vector<float> value,
                                         std::vector<float> value_predicted) = 0; 
+        virtual std::vector<float> loss_prime(std::vector<float> value,
+                                              std::vector<float> value_predicted) = 0; 
 };
 
 class LossFunctionSquaredError : public ILossFunction {
     public:
         std::vector<float> loss(std::vector<float> value,
                                 std::vector<float> value_predicted); 
+        std::vector<float> loss_prime(std::vector<float> value,
+                                      std::vector<float> value_predicted); 
 };
 
 class LossFunctionSoftMax : public ILossFunction {
     public:
         std::vector<float> loss(std::vector<float> value,
                                 std::vector<float> value_predicted); 
+        std::vector<float> loss_prime(std::vector<float> value,
+                                      std::vector<float> value_predicted); 
 };
 
 #endif
