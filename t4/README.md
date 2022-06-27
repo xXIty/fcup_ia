@@ -34,6 +34,7 @@ Allowed options:
   -s [ --train_stop ] arg (=0.0500000007)
                                         Stop the learning procedure when an 
                                         absolute error (difference) is achieved
+  -v [ --verbose ]                      Print loss for each epoch
 ```
 
 # Usefull commands
