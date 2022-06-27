@@ -8,6 +8,17 @@
 #include <algorithm>
 #include <limits>
 
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+
+void fix_cursor(int s){
+    std::system("setterm -cursor on");
+    std::cout << std::endl;
+    exit(1);
+}
+
 
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
@@ -20,6 +31,14 @@ int main(int argc, const char **argv) {
     float                     train_stop;
     fs::path                  train_set_file;
     std::vector<std::size_t>  hidden_layers;
+
+    struct sigaction sigIntHandler;
+
+    sigIntHandler.sa_handler = fix_cursor;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+
+    sigaction(SIGINT, &sigIntHandler, NULL);
 
     // Declare the supported options.
     po::options_description desc("Allowed options");
@@ -41,9 +60,13 @@ int main(int argc, const char **argv) {
          po::value< float >(&learning_rate)->default_value(0.05f),
          "Use the specified learning rate")
 
-        ("a,a",
+        ("train_stop,s",
          po::value< float >(&train_stop)->default_value(0.05f),
          "Stop the learning procedure when an absolute error (difference) is achieved")
+
+        ("verbose,v",
+         po::bool_switch()->default_value(false),
+         "Print loss for each epoch")
 
     ;
 
@@ -103,7 +126,14 @@ int main(int argc, const char **argv) {
 
         std::cout << "[+] Starting training..." << std::endl;
 
-        size_t epoch_nubmer = 1;
+        size_t epoch_nubmer = 0;
+
+        if (vm["verbose"].as<bool>())
+            std::cout << std::setw(6)   << "Epoch"
+                      << std::setw(10)  << "Loss"  << std::endl;
+        else 
+            std::system("setterm -cursor off");
+
         while (loss_max > train_stop) {
             loss_max = 0;
             for (size_t row_id = 0; row_id < train_set.size(); ++row_id) {
@@ -116,10 +146,25 @@ int main(int argc, const char **argv) {
                 if (training_example_loss_max > loss_max)
                     loss_max = training_example_loss_max;
             }
-            std::cout << "[+] Epoch: " << std::setw(3)   << epoch_nubmer++
-                      << "  Loss: "    << std::setw(10)  << loss_max << std::endl;
+            if (vm["verbose"].as<bool>())
+                std::cout << ++epoch_nubmer << " " << loss_max << std::endl;
+            else 
+                std::cout << "\r[+] Epoch: " << std::setw(3)   << ++epoch_nubmer
+                          << "  Loss: "    << std::setw(10)  << loss_max;
 
         }
+        if (!vm["verbose"].as<bool>()) {
+            std::system("setterm -cursor on");
+            std::cout << std::endl;
+        }
+
+        std::cout << std::setw(14) << "Learning rate"
+            << std::setw(14) << "Stop"
+            << std::setw(14) << "#Epochs" << std::endl;
+
+        std::cout << "#" << std::setw(13) << learning_rate
+            << std::setw(14) << train_stop
+            << std::setw(14) << epoch_nubmer << std::endl;
         
         return EXIT_SUCCESS;
     }
