@@ -83,7 +83,8 @@ int main(int argc, const char **argv) {
     // Train a new model.
     if (vm.count("train")) {
 
-        float   loss_max = std::numeric_limits<float>::max();
+        float   loss_max  = std::numeric_limits<float>::max();
+        float   loss_mean = std::numeric_limits<float>::max();
         size_t  model_input_size;       
         size_t  model_output_size;      
         std::string  loss_function        =  "squared-error";
@@ -130,27 +131,33 @@ int main(int argc, const char **argv) {
 
         if (vm["verbose"].as<bool>())
             std::cout << std::setw(6)   << "Epoch"
-                      << std::setw(10)  << "Loss"  << std::endl;
+                      << std::setw(10)  << "Loss Mean"
+                      << std::setw(10)  << "Loss Max"  << std::endl;
         else 
             std::system("setterm -cursor off");
 
         while (loss_max > train_stop) {
-            loss_max = 0;
+            loss_mean  = 0;
+            loss_max  = 0;
             for (size_t row_id = 0; row_id < train_set.size(); ++row_id) {
                 std::pair<VF,VF> training_example = train_set.get_in_out(row_id);
                 VF loss = model.train(training_example.first, training_example.second);
 
                 // Update maximum loss between training_example and model prediction
-                float training_example_loss_max = *std::max_element(std::begin(loss),
-                                                                    std::end(loss));
-                if (training_example_loss_max > loss_max)
-                    loss_max = training_example_loss_max;
+                if (loss[0] > loss_max)
+                    loss_max = loss[0];
+
+                loss_mean += loss[0];
             }
-            if (vm["verbose"].as<bool>())
-                std::cout << ++epoch_nubmer << " " << loss_max << std::endl;
-            else 
-                std::cout << "\r[+] Epoch: " << std::setw(3)   << ++epoch_nubmer
-                          << "  Loss: "    << std::setw(10)  << loss_max;
+            loss_mean /= train_set.size();
+            ++epoch_nubmer;
+            if (epoch_nubmer % 100 == 0) {
+                if (vm["verbose"].as<bool>())
+                    std::cout << epoch_nubmer << " " << loss_mean << " " << loss_max  << std::endl;
+                else 
+                    std::cout << "\r[+] Epoch: " << std::setw(5)   << epoch_nubmer
+                              << "  Loss: "    << std::setw(10)  << loss_mean;
+            }
 
         }
         if (!vm["verbose"].as<bool>()) {
