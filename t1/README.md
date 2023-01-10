@@ -21,7 +21,7 @@ python -m pip install -r requirements.txt
 
 ## USAGE
 
-python jogodo15.py -h
+`python jogodo15.py -h`
 
 
 
