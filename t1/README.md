@@ -14,7 +14,7 @@ chmod +x .venv/bin/activate
 ./.venv/bin/activate
 python -m pip install -r requirements.txt
 
-** NOTE: The virtual environment should be activated to execute the program **
+**NOTE: The virtual environment should be activated to execute the program**
 ./venv/bin/activate 
 
 
